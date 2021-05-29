@@ -145,7 +145,7 @@ namespace scripting
 			push_value(*i);
 		}
 
-		game::AddReftoObject(id);
+		game::AddRefToObject(id);
 
 		const auto local_id = game::AllocThread(id);
 		const auto result = game::VM_Execute(local_id, pos, arguments.size());
