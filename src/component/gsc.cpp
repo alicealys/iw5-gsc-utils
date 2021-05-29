@@ -1,6 +1,7 @@
 #include <stdinc.hpp>
 #include "loader/component_loader.hpp"
 #include "scheduler.hpp"
+#include "scripting.hpp"
 
 #include "game/scripting/event.hpp"
 #include "game/scripting/execution.hpp"
@@ -169,6 +170,62 @@ namespace gsc
 				retn
 			}
 		}
+
+		unsigned int replaced_pos = 0;
+
+		void get_replaced_pos(unsigned int pos)
+		{
+			if (scripting::replaced_functions.find(pos) != scripting::replaced_functions.end())
+			{
+				replaced_pos = scripting::replaced_functions[pos];
+			}
+		}
+
+		__declspec(naked) void vm_execute_stub()
+		{
+			__asm
+			{
+				pushad
+				push esi
+				call get_replaced_pos
+				pop esi
+				popad
+
+				cmp replaced_pos, 0
+				jne set_pos
+
+				movzx eax, byte ptr[esi]
+				inc esi
+
+				jmp loc_1
+			loc_1:
+				mov [ebp - 0x18], eax
+				mov [ebp - 0x8], esi
+
+				push ecx
+
+				mov ecx, 0x20B8E28
+				mov [ecx], eax
+
+				mov ecx, 0x20B4A5C
+				mov[ecx], esi
+
+				pop ecx
+
+				cmp eax, 0x98
+
+				push 0x56B740
+				retn
+			set_pos:
+				mov esi, replaced_pos
+				mov replaced_pos, 0
+
+				movzx eax, byte ptr[esi]
+				inc esi
+
+				jmp loc_1
+			}
+		}
 	}
 
 	namespace function
@@ -204,8 +261,24 @@ namespace gsc
 				return {};
 			});
 
+			function::add("replacefunc", [](function_args args) -> scripting::script_value
+			{
+				const auto what = args[0].get_raw();
+				const auto with = args[1].get_raw();
+
+				if (what.type != game::SCRIPT_FUNCTION || with.type != game::SCRIPT_FUNCTION)
+				{
+					throw std::runtime_error("Invalid type");
+				}
+
+				scripting::replaced_functions[what.u.uintValue] = with.u.uintValue;
+
+				return {};
+			});
+
 			utils::hook::jump(0x56C8EB, call_builtin_stub);
 			utils::hook::jump(0x56CBDC, call_builtin_method_stub);
+			utils::hook::jump(0x56B726, vm_execute_stub);
 		}
 	};
 }
