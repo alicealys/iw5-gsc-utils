@@ -198,17 +198,9 @@ namespace gsc
 	public:
 		void post_unpack() override
 		{
-			function::add("lol", [](function_args args) -> scripting::script_value
+			function::add("executecommand", [](function_args args) -> scripting::script_value
 			{
-				const auto str = args[0].as<std::string>();
-
-				return str;
-			});
-
-			method::add("test", [](game::scr_entref_t, function_args args) -> scripting::script_value
-			{
-				printf("here\n");
-
+				game::Cbuf_AddText(0, args[0].as<const char*>());
 				return {};
 			});
 
