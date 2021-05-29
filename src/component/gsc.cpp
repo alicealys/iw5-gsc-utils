@@ -53,7 +53,7 @@ namespace gsc
 
 			for (auto i = 0; i < game::scr_VmPub->outparamcount; i++)
 			{
-				const auto value = game::scr_VmPub->top[i];
+				const auto value = game::scr_VmPub->top[-i];
 				args.push_back(value);
 			}
 
