@@ -12,6 +12,8 @@ namespace scripting
 	std::unordered_map<int, std::unordered_map<std::string, int>> fields_table;
 	std::unordered_map<std::string, std::unordered_map<std::string, char*>> script_function_table;
 
+	std::unordered_map<unsigned, unsigned> replaced_functions;
+
 	namespace
 	{
 		utils::hook::detour vm_notify_hook;
@@ -67,6 +69,8 @@ namespace scripting
 
 		void g_shutdown_game_stub(const int free_scripts)
 		{
+			replaced_functions.clear();
+
 			g_shutdown_game_hook.invoke<void>(free_scripts);
 		}
 
