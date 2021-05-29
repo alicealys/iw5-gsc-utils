@@ -60,54 +60,68 @@ namespace gsc
 			return args;
 		}
 
+		void return_value(const scripting::script_value& value)
+		{
+			if (game::scr_VmPub->outparamcount)
+			{
+				game::Scr_ClearOutParams();
+			}
+
+			scripting::push_value(value);
+		}
+
 		auto function_map_start = 0x200;
 		auto method_map_start = 0x8400;
 
 		void call_function(unsigned int id)
 		{
-			if (id >= 0x200)
+			if (id < 0x200)
 			{
-				try
-				{
-					const auto result = functions[id](get_arguments());
-					scripting::push_value(result);
-				}
-				catch (std::exception e)
-				{
-					printf("************** Script execution error **************\n");
-					printf("Error executing function %s\n", function_name(id).data());
-					printf("%s\n", e.what());
-					printf("****************************************************\n");
-				}
-
+				return reinterpret_cast<builtin_function*>(0x1D6EB34)[id]();
 			}
-			else
+
+			try
 			{
-				reinterpret_cast<builtin_function*>(0x1D6EB34)[id]();
+				const auto result = functions[id](get_arguments());
+				const auto type = result.get_raw().type;
+
+				if (type)
+				{
+					return_value(result);
+				}
+			}
+			catch (std::exception e)
+			{
+				printf("************** Script execution error **************\n");
+				printf("Error executing function %s\n", function_name(id).data());
+				printf("%s\n", e.what());
+				printf("****************************************************\n");
 			}
 		}
 
 		void call_method(game::scr_entref_t ent, unsigned int id)
 		{
-			if (id >= 0x8400)
+			if (id < 0x8400)
 			{
-				try
-				{
-					const auto result = methods[id](ent, get_arguments());
-					scripting::push_value(result);
-				}
-				catch (std::exception e)
-				{
-					printf("************** Script execution error **************\n");
-					printf("Error executing method %s\n", method_name(id).data());
-					printf("%s\n", e.what());
-					printf("****************************************************\n");
-				}
-
+				return reinterpret_cast<builtin_method*>(0x1D4F258)[id](ent);
 			}
-			else
+
+			try
 			{
-				reinterpret_cast<builtin_method*>(0x1D4F258)[id](ent);
+				const auto result = methods[id](ent, get_arguments());
+				const auto type = result.get_raw().type;
+
+				if (type)
+				{
+					return_value(result);
+				}
+			}
+			catch (std::exception e)
+			{
+				printf("************** Script execution error **************\n");
+				printf("Error executing method %s\n", method_name(id).data());
+				printf("%s\n", e.what());
+				printf("****************************************************\n");
 			}
 		}
 

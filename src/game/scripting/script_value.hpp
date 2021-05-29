@@ -51,6 +51,13 @@ namespace scripting
 				throw std::runtime_error("Invalid type");
 			}
 
+			const auto value = this->get<int>();
+
+			if (!value)
+			{
+				throw std::runtime_error("Null pointer");
+			}
+
 			return reinterpret_cast<T*>(this->get<int>());
 		}
 
