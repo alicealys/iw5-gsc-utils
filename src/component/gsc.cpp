@@ -6,52 +6,15 @@
 #include "game/scripting/execution.hpp"
 #include "game/scripting/functions.hpp"
 
+#include "gsc.hpp"
+
 namespace gsc
 {
-	using function_args = std::vector<scripting::script_value>;
-
-	using builtin_function = void(*)();
-	using builtin_method = void(*)(game::scr_entref_t);
-
-	using script_function = std::function<scripting::script_value(function_args)>;
-	using script_method = std::function<scripting::script_value(game::scr_entref_t, function_args)>;
-
 	std::unordered_map<unsigned, script_function> functions;
 	std::unordered_map<unsigned, script_method> methods;
 
 	namespace
 	{
-		void gsc_function_stub(game::scr_entref_t ent)
-		{
-			/*const auto function = scripting::script_value(*game::scr_VmPub->top);
-
-			if (!function.is<std::string>())
-			{
-				return;
-			}
-
-			const auto function_str = function.as<std::string>();
-
-			if (gsc_functions.find(function_str) != gsc_functions.end())
-			{
-				std::vector<scripting::script_value> arguments;
-
-				for (auto i = 1; i < game::scr_VmPub->outparamcount; i++)
-				{
-					const auto value = game::scr_VmPub->top[-i];
-
-					arguments.emplace_back(value);
-				}
-
-				const auto value = gsc_functions[function_str](ent, arguments);
-				if (*reinterpret_cast<const int*>(&value))
-				{
-					game::Scr_ClearOutParams();
-					scripting::push_value(value);
-				}
-			}*/
-		}
-
 		std::string method_name(unsigned int id)
 		{
 			const auto map = *game::plutonium::method_map_rev;
