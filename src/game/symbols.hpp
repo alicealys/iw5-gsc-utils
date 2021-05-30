@@ -9,6 +9,7 @@ namespace game
 	WEAK symbol<void(int type, VariableUnion u)> AddRefToValue{0x5656E0};
 	WEAK symbol<void(unsigned int id)> AddRefToObject{0x5655F0};
 	WEAK symbol<unsigned int(unsigned int id)> AllocThread{0x565580};
+	WEAK symbol<ObjectVariableValue*(unsigned int* id)> AllocVariable{0x565430};
 	WEAK symbol<unsigned int()> AllocObject{0x565530};
 	WEAK symbol<void(int type, VariableUnion u)> RemoveRefToValue{0x565730};
 	WEAK symbol<void(unsigned int id)> RemoveRefToObject{0x5681E0};
@@ -28,6 +29,8 @@ namespace game
 	WEAK symbol<unsigned int(unsigned int parentId, unsigned int name)> FindVariable{0x5651F0};
 	WEAK symbol<unsigned int(unsigned int parentId, unsigned int name)> FindObject{0x565BD0};
 	WEAK symbol<unsigned int(unsigned int parentId, unsigned int name)> GetVariable{0x5663E0};
+	WEAK symbol<unsigned int(unsigned int parentId, unsigned int name)> GetNewVariable{0x566390};
+	WEAK symbol<void(unsigned int parentId, unsigned int id, VariableValue* value)> SetNewVariableValue{0x5658D0};
 
 	WEAK symbol<const float* (const float* v)> Scr_AllocVector{0x565680};
 	WEAK symbol<void()> Scr_ClearOutParams{0x569010};
@@ -36,6 +39,12 @@ namespace game
 	WEAK symbol<void(int id, unsigned int stringValue, unsigned int paramcount)> Scr_NotifyId{0x56B5E0};
 	WEAK symbol<int(const char* filename, unsigned int str)> Scr_GetFunctionHandle{0x5618A0};
 	WEAK symbol<unsigned int(int handle, unsigned int objId, unsigned int paramcount)> Scr_ExecThreadInternal{0x56E1C0};
+	WEAK symbol<unsigned int(int entnum, unsigned int classnum)> Scr_GetEntityId{0x567D80};
+	WEAK symbol<unsigned int(int entnum, unsigned int classnum)> Scr_AddEntityNum{0x56ABC0};
+	WEAK symbol<void()> Scr_AddArray{0x56AE30};
+	WEAK symbol<unsigned int(unsigned int threadId)> Scr_GetSelf{0x5655E0};
+	WEAK symbol<void()> Scr_MakeArray{0x56ADE0};
+	WEAK symbol<void(unsigned int stringValue)> Scr_AddArrayStringIndexed{0x56AE70};
 
 	WEAK symbol<unsigned int(const char* str, unsigned int user)> SL_GetString{0x5649E0};
 	WEAK symbol<const char*(unsigned int stringValue)> SL_ConvertToString{0x564270};

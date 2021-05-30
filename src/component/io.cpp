@@ -11,29 +11,12 @@
 
 namespace io
 {
-	namespace
-	{
-		std::string load_path()
-		{
-			const auto fs_basegame = game::Dvar_FindVar("fs_basegame");
-
-			return fs_basegame->current.string;
-		}
-
-		std::string get_path()
-		{
-			static const auto path = load_path();
-
-			return path;
-		}
-	}
-
 	class component final : public component_interface
 	{
 	public:
 		void post_unpack() override
 		{
-			const auto path = get_path();
+			const auto path = game::Dvar_FindVar("fs_basegame")->current.string;
 			std::filesystem::current_path(path);
 
 			gsc::function::add("fremove", [](gsc::function_args args)

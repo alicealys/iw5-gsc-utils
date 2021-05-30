@@ -58,7 +58,7 @@ namespace scripting
 				throw std::runtime_error("Null pointer");
 			}
 
-			return reinterpret_cast<T*>(this->get<int>());
+			return reinterpret_cast<T*>(value);
 		}
 
 		const game::VariableValue& get_raw() const;
