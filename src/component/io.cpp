@@ -28,11 +28,11 @@ namespace io
         }
     }
 
-	class component final : public component_interface
-	{
-	public:
-		void post_unpack() override
-		{
+    class component final : public component_interface
+    {
+    public:
+        void post_unpack() override
+        {
             const auto path = get_path();
             std::filesystem::current_path(path);
 
@@ -132,8 +132,8 @@ namespace io
 
                 return result;
             });
-		}
-	};
+        }
+    };
 }
 
 REGISTER_COMPONENT(io::component)
