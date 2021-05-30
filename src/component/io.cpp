@@ -11,129 +11,129 @@
 
 namespace io
 {
-    namespace
-    {
-        std::string load_path()
-        {
-            const auto fs_basegame = game::Dvar_FindVar("fs_basegame");
+	namespace
+	{
+		std::string load_path()
+		{
+			const auto fs_basegame = game::Dvar_FindVar("fs_basegame");
 
-            return fs_basegame->current.string;
-        }
+			return fs_basegame->current.string;
+		}
 
-        std::string get_path()
-        {
-            static const auto path = load_path();
+		std::string get_path()
+		{
+			static const auto path = load_path();
 
-            return path;
-        }
-    }
+			return path;
+		}
+	}
 
-    class component final : public component_interface
-    {
-    public:
-        void post_unpack() override
-        {
-            const auto path = get_path();
-            std::filesystem::current_path(path);
+	class component final : public component_interface
+	{
+	public:
+		void post_unpack() override
+		{
+			const auto path = get_path();
+			std::filesystem::current_path(path);
 
-            gsc::function::add("fremove", [](gsc::function_args args)
-            {
-                const auto path = args[0].as<const char*>();
+			gsc::function::add("fremove", [](gsc::function_args args)
+			{
+				const auto path = args[0].as<const char*>();
 
-                const auto result = std::remove(path);
+				const auto result = std::remove(path);
 
-                return result;
-            });
+				return result;
+			});
 
-            gsc::function::add("fopen", [](gsc::function_args args)
-            {
-                const auto* path = args[0].as<const char*>();
-                const auto* mode = args[1].as<const char*>();
+			gsc::function::add("fopen", [](gsc::function_args args)
+			{
+				const auto* path = args[0].as<const char*>();
+				const auto* mode = args[1].as<const char*>();
 
-                const auto handle = fopen(path, mode);
+				const auto handle = fopen(path, mode);
 
-                if (!handle)
-                {
-                    printf("fopen: Invalid path\n");
-                }
+				if (!handle)
+				{
+					printf("fopen: Invalid path\n");
+				}
 
-                return handle;
-            });
+				return handle;
+			});
 
-            gsc::function::add("fgetc", [](gsc::function_args args)
-            {
-                const auto handle = args[0].as_ptr<FILE>();
+			gsc::function::add("fgetc", [](gsc::function_args args)
+			{
+				const auto handle = args[0].as_ptr<FILE>();
 
-                const char c = fgetc(handle);
-                const char str[2] = {c, '\0'};
+				const char c = fgetc(handle);
+				const char str[2] = {c, '\0'};
 
-                return std::string(str);
-            });
+				return std::string(str);
+			});
 
-            gsc::function::add("fgets", [](gsc::function_args args)
-            {
-                const auto handle = args[0].as_ptr<FILE>();
-                const auto n = args[1].as<int>();
+			gsc::function::add("fgets", [](gsc::function_args args)
+			{
+				const auto handle = args[0].as_ptr<FILE>();
+				const auto n = args[1].as<int>();
 
-                char* buffer = (char*)calloc(n, sizeof(char));
+				char* buffer = (char*)calloc(n, sizeof(char));
 
-                fgets(buffer, n, handle);
+				fgets(buffer, n, handle);
 
-                const std::string result = buffer;
+				const std::string result = buffer;
 
-                free(buffer);
+				free(buffer);
 
-                return result;
-            });
+				return result;
+			});
 
-            gsc::function::add("feof", [](gsc::function_args args)
-            {
-                const auto handle = args[0].as_ptr<FILE>();
-                return feof(handle);
-            });
+			gsc::function::add("feof", [](gsc::function_args args)
+			{
+				const auto handle = args[0].as_ptr<FILE>();
+				return feof(handle);
+			});
 
-            gsc::function::add("fclose", [](gsc::function_args args)
-            {
-                const auto handle = args[0].as_ptr<FILE>();
-                return fclose(handle);
-            });
+			gsc::function::add("fclose", [](gsc::function_args args)
+			{
+				const auto handle = args[0].as_ptr<FILE>();
+				return fclose(handle);
+			});
 
-            gsc::function::add("fputs", [](gsc::function_args args)
-            {
-                const auto text = args[0].as<const char*>();
-                const auto handle = args[0].as_ptr<FILE>();
+			gsc::function::add("fputs", [](gsc::function_args args)
+			{
+				const auto text = args[0].as<const char*>();
+				const auto handle = args[0].as_ptr<FILE>();
 
-                return fputs(text, handle);
-            });
+				return fputs(text, handle);
+			});
 
-            gsc::function::add("fprintf", [](gsc::function_args args)
-            {
-                const auto text = args[0].as<const char*>();
-                const auto handle = args[1].as_ptr<FILE>();
+			gsc::function::add("fprintf", [](gsc::function_args args)
+			{
+				const auto text = args[0].as<const char*>();
+				const auto handle = args[1].as_ptr<FILE>();
 
-                return fprintf(handle, text);
-            });
+				return fprintf(handle, text);
+			});
 
-            gsc::function::add("fread", [](gsc::function_args args)
-            {
-                const auto handle = args[0].as_ptr<FILE>();
+			gsc::function::add("fread", [](gsc::function_args args)
+			{
+				const auto handle = args[0].as_ptr<FILE>();
 
-                fseek(handle, 0, SEEK_END);
-                const auto length = ftell(handle);
+				fseek(handle, 0, SEEK_END);
+				const auto length = ftell(handle);
 
-                fseek(handle, 0, SEEK_SET);
-                char* buffer = (char*)calloc(length, sizeof(char));
+				fseek(handle, 0, SEEK_SET);
+				char* buffer = (char*)calloc(length, sizeof(char));
 
-                fread(buffer, sizeof(char), length, handle);
+				fread(buffer, sizeof(char), length, handle);
 
-                const std::string result = buffer;
+				const std::string result = buffer;
 
-                free(buffer);
+				free(buffer);
 
-                return result;
-            });
-        }
-    };
+				return result;
+			});
+		}
+	};
 }
 
 REGISTER_COMPONENT(io::component)
