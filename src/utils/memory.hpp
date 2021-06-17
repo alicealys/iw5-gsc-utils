@@ -34,7 +34,7 @@ namespace utils
 
 			bool empty() const;
 
-			//char* duplicate_string(const std::string& string);
+			char* duplicate_string(const std::string& string);
 
 		private:
 			std::mutex mutex_;
@@ -55,7 +55,7 @@ namespace utils
 			return static_cast<T*>(allocate(count * sizeof(T)));
 		}
 
-		//static char* duplicate_string(const std::string& string);
+		static char* duplicate_string(const std::string& string);
 
 		static void free(void* data);
 		static void free(const void* data);

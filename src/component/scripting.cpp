@@ -2,6 +2,7 @@
 #include "loader/component_loader.hpp"
 
 #include "scheduler.hpp"
+#include "command.hpp"
 
 #include "game/scripting/event.hpp"
 #include "game/scripting/execution.hpp"
@@ -69,8 +70,8 @@ namespace scripting
 
 		void g_shutdown_game_stub(const int free_scripts)
 		{
+			command::clear_script_commands();
 			replaced_functions.clear();
-
 			g_shutdown_game_hook.invoke<void>(free_scripts);
 		}
 
@@ -133,9 +134,6 @@ namespace scripting
 			g_shutdown_game_hook.create(0x50C100, g_shutdown_game_stub);
 
 			scr_add_class_field_hook.create(0x567CD0, scr_add_class_field_stub);
-			//vm_notify_hook.create(0x569720, vm_notify_stub);
-
-			//scr_emit_function_hook.create(0x561400, scr_emit_function_stub);
 		}
 	};
 }

@@ -140,6 +140,7 @@ namespace scripting
 	{
 		const auto id = entity.get_entity_id();
 
+		stack_isolation _;
 		for (auto i = arguments.rbegin(); i != arguments.rend(); ++i)
 		{
 			push_value(*i);
@@ -149,16 +150,9 @@ namespace scripting
 
 		const auto local_id = game::AllocThread(id);
 		const auto result = game::VM_Execute(local_id, pos, arguments.size());
+		game::RemoveRefToObject(result);
 
-		const auto value = get_return_value();
-
-		game::RemoveRefToValue(game::scr_VmPub->top->type, game::scr_VmPub->top->u);
-		game::scr_VmPub->top->type = (game::scriptType_e)0;
-
-		--game::scr_VmPub->top;
-		--game::scr_VmPub->inparamcount;
-
-		return value;
+		return get_return_value();
 	}
 
 	script_value call_script_function(const entity& entity, const std::string& filename,

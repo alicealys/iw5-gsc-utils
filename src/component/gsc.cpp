@@ -2,6 +2,7 @@
 #include "loader/component_loader.hpp"
 #include "scheduler.hpp"
 #include "scripting.hpp"
+#include "command.hpp"
 
 #include "game/scripting/event.hpp"
 #include "game/scripting/execution.hpp"
@@ -250,6 +251,33 @@ namespace gsc
 		}
 	}
 
+	unsigned int make_array()
+	{
+		unsigned int index = 0;
+		const auto variable = game::AllocVariable(&index);
+		variable->w.type = game::SCRIPT_ARRAY;
+		variable->u.f.prev = 0;
+		variable->u.f.next = 0;
+
+		return index;
+	}
+
+	void add_array_key_value(unsigned int parent_id, const std::string& _key, const scripting::script_value& value)
+	{
+		const auto key = game::SL_GetString(_key.data(), 0);
+
+		scripting::push_value(scripting::entity(parent_id));
+		scripting::push_value(value);
+		game::Scr_AddArrayStringIndexed(key);
+	}
+
+	void add_array_value(unsigned int parent_id, const scripting::script_value& value)
+	{
+		scripting::push_value(scripting::entity(parent_id));
+		scripting::push_value(value);
+		game::Scr_AddArray();
+	}
+
 	class component final : public component_interface
 	{
 	public:
@@ -272,6 +300,32 @@ namespace gsc
 				}
 
 				scripting::replaced_functions[what.u.uintValue] = with.u.uintValue;
+
+				return {};
+			});
+
+			function::add("addcommand", [](function_args args) -> scripting::script_value
+			{
+				const auto name = args[0].as<std::string>();
+				const auto function = args[1].get_raw();
+
+				if (function.type != game::SCRIPT_FUNCTION)
+				{
+					throw std::runtime_error("Invalid type");
+				}
+
+				const auto pos = function.u.codePosValue;
+				command::add_script_command(name, [pos](const command::params& params)
+				{
+					const auto array = make_array();
+					for (auto i = 0; i < params.size(); i++)
+					{
+						add_array_value(array, params[i]);
+					}
+
+					const auto entity = scripting::entity(array);
+					scripting::exec_ent_thread(*game::levelEntityId, pos, {entity});
+				});
 
 				return {};
 			});
