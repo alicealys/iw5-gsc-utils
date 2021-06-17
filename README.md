@@ -87,6 +87,54 @@ This plugin adds some useful functions/methods to IW5's GSC VM
       */
   }
   ```
+  
+  This function can also be useful to reveal contents of existing arrays such as `game`:
+  ```c
+  init()
+  {
+      print(jsonSerialize(game["allies_model"], 4));
+      
+      /*
+      [script]: {
+          "ASSAULT": "[function]",
+          "GHILLIE": "[function]",
+          "JUGGERNAUT": "[function]",
+          "LMG": "[function]",
+          "RIOT": "[function]",
+          "SHOTGUN": "[function]",
+          "SMG": "[function]",
+          "SNIPER": "[function]"
+      }
+      */
+      
+      print(jsonSerialize(game["music"], 4));
+      
+      /*
+      [script]: {
+          "defeat_allies": "UK_defeat_music",
+          "defeat_axis": "IC_defeat_music",
+           "losing_allies": "UK_losing_music",
+           "losing_axis": "IC_losing_music",
+           "losing_time": "mp_time_running_out_losing",
+           "nuke_music": "nuke_music",
+           "spawn_allies": "UK_spawn_music",
+           "spawn_axis": "IC_spawn_music",
+           "suspense": [
+               "mp_suspense_06",
+               "mp_suspense_05",
+               "mp_suspense_04",
+               "mp_suspense_03",
+               "mp_suspense_02",
+               "mp_suspense_01"
+           ],
+           "victory_allies": "UK_victory_music",
+           "victory_axis": "IC_victory_music",
+           "winning_allies": "UK_winning_music",
+           "winning_axis": "IC_winning_music"
+       }
+      */
+  }
+  ```
 * `jsonParse(json)`: Converts JSON into a GSC variable:
 
   ```c
@@ -158,3 +206,5 @@ This plugin adds some useful functions/methods to IW5's GSC VM
   }
   ```
  
+ # Credits
+ * [xensik](https://github.com/xensik)
