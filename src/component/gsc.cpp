@@ -330,6 +330,29 @@ namespace gsc
 				return {};
 			});
 
+			function::add("say", [](function_args args) -> scripting::script_value
+			{
+				const auto message = args[0].as<std::string>();
+				game::SV_GameSendServerCommand(-1, 0, utils::string::va("%c \"%s\"", 84, message.data()));
+
+				return {};
+			});
+
+			method::add("tell", [](game::scr_entref_t ent, function_args args) -> scripting::script_value
+			{
+				if (ent.classnum != 0)
+				{
+					throw std::runtime_error("Invalid type");
+				}
+
+				const auto client = ent.entnum;
+				const auto message = args[0].as<std::string>();
+
+				game::SV_GameSendServerCommand(client, 0, utils::string::va("%c \"%s\"", 84, message.data()));
+
+				return {};
+			});
+
 			utils::hook::jump(0x56C8EB, call_builtin_stub);
 			utils::hook::jump(0x56CBDC, call_builtin_method_stub);
 			utils::hook::jump(0x56B726, vm_execute_stub);
