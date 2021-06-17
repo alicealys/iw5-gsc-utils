@@ -22,10 +22,7 @@ namespace io
 			gsc::function::add("fremove", [](gsc::function_args args)
 			{
 				const auto path = args[0].as<const char*>();
-
-				const auto result = std::remove(path);
-
-				return result;
+				return std::remove(path);
 			});
 
 			gsc::function::add("fopen", [](gsc::function_args args)
@@ -43,56 +40,16 @@ namespace io
 				return handle;
 			});
 
-			gsc::function::add("fgetc", [](gsc::function_args args)
-			{
-				const auto handle = args[0].as_ptr<FILE>();
-
-				const char c = fgetc(handle);
-				const char str[2] = {c, '\0'};
-
-				return std::string(str);
-			});
-
-			gsc::function::add("fgets", [](gsc::function_args args)
-			{
-				const auto handle = args[0].as_ptr<FILE>();
-				const auto n = args[1].as<int>();
-
-				char* buffer = (char*)calloc(n, sizeof(char));
-
-				fgets(buffer, n, handle);
-
-				const std::string result = buffer;
-
-				free(buffer);
-
-				return result;
-			});
-
-			gsc::function::add("feof", [](gsc::function_args args)
-			{
-				const auto handle = args[0].as_ptr<FILE>();
-				return feof(handle);
-			});
-
 			gsc::function::add("fclose", [](gsc::function_args args)
 			{
 				const auto handle = args[0].as_ptr<FILE>();
 				return fclose(handle);
 			});
 
-			gsc::function::add("fputs", [](gsc::function_args args)
+			gsc::function::add("fwrite", [](gsc::function_args args)
 			{
-				const auto text = args[0].as<const char*>();
 				const auto handle = args[0].as_ptr<FILE>();
-
-				return fputs(text, handle);
-			});
-
-			gsc::function::add("fprintf", [](gsc::function_args args)
-			{
-				const auto text = args[0].as<const char*>();
-				const auto handle = args[1].as_ptr<FILE>();
+				const auto text = args[1].as<const char*>();
 
 				return fprintf(handle, text);
 			});
