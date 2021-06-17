@@ -158,6 +158,36 @@ namespace json
 	public:
 		void post_unpack() override
 		{
+			gsc::function::add("array", [](gsc::function_args args)
+			{
+				const auto array = gsc::make_array();
+
+				for (auto i = 0; i < args.size(); i++)
+				{
+					gsc::add_array_value(array, args[i]);
+				}
+
+				return scripting::entity(array);
+			});
+
+			gsc::function::add("map", [](gsc::function_args args)
+			{
+				const auto array = gsc::make_array();
+
+				for (auto i = 0; i < args.size(); i += 2)
+				{
+					if (i >= args.size() - 1)
+					{
+						continue;
+					}
+
+					const auto key = args[i].as<std::string>();
+					gsc::add_array_key_value(array, key, args[i + 1]);
+				}
+
+				return scripting::entity(array);
+			});
+
 			gsc::function::add("jsonparse", [](gsc::function_args args)
 			{
 				const auto json = args[0].as<std::string>();
