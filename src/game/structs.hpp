@@ -17,6 +17,15 @@ namespace game
 		int flags;
 	};
 
+	struct CmdArgs
+	{
+		int nesting;
+		int localClientNum[8];
+		int controllerIndex[8];
+		int argc[8];
+		const char** argv[8];
+	};
+
 	struct msg_t
 	{
 		int overflowed;

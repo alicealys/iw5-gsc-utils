@@ -15,33 +15,6 @@ namespace json
 {
 	namespace
 	{
-		unsigned int make_array()
-		{
-			unsigned int index = 0;
-			const auto variable = game::AllocVariable(&index);
-			variable->w.type = game::SCRIPT_ARRAY;
-			variable->u.f.prev = 0;
-			variable->u.f.next = 0;
-
-			return index;
-		}
-		
-		void add_array_key_value(unsigned int parent_id, const std::string& _key, const scripting::script_value& value)
-		{
-			const auto key = game::SL_GetString(_key.data(), 0);
-
-			scripting::push_value(scripting::entity(parent_id));
-			scripting::push_value(value);
-			game::Scr_AddArrayStringIndexed(key);
-		}
-
-		void add_array_value(unsigned int parent_id, const scripting::script_value& value)
-		{
-			scripting::push_value(scripting::entity(parent_id));
-			scripting::push_value(value);
-			game::Scr_AddArray();
-		}
-
 		nlohmann::json gsc_to_json(scripting::script_value value);
 
 		nlohmann::json entity_to_array(unsigned int id)
@@ -154,22 +127,22 @@ namespace json
 				return obj.get<std::string>();
 			case (nlohmann::detail::value_t::array):
 			{
-				const auto arr = make_array();
+				const auto arr = gsc::make_array();
 
 				for (const auto& [key, value] : obj.items())
 				{
-					add_array_value(arr, json_to_gsc(value));
+					gsc::add_array_value(arr, json_to_gsc(value));
 				}
 
 				return scripting::entity(arr);
 			}
 			case (nlohmann::detail::value_t::object):
 			{
-				const auto arr = make_array();
+				const auto arr = gsc::make_array();
 
 				for (const auto& [key, value] : obj.items())
 				{
-					add_array_key_value(arr, key, json_to_gsc(value));
+					gsc::add_array_key_value(arr, key, json_to_gsc(value));
 				}
 
 				return scripting::entity(arr);

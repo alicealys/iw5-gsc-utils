@@ -18,8 +18,9 @@ namespace game
 
 	WEAK symbol<const char*(int index)> ConcatArgs{0x502150};
 	WEAK symbol<void(int localClientNum, const char* text)> Cbuf_AddText{0x545680};
-	WEAK symbol<void(const char* cmdName, void(), cmd_function_t* allocedCmd)> Cmd_AddCommandInternal{0x0};
-	WEAK symbol<const char*(int index)> Cmd_Argv{0x0};
+	WEAK symbol<void(const char* cmdName, void(), cmd_function_t* allocedCmd)> Cmd_AddCommandInternal{0x545DF0};
+	WEAK symbol<void(const char* cmdName)> Cmd_RemoveCommand{0x545E20};
+	WEAK symbol<const char*(int index)> Cmd_Argv{0x467600};
 
 	WEAK symbol<const dvar_t*(const char*)> Dvar_FindVar{0x5BDCC0};
 
@@ -59,6 +60,8 @@ namespace game
 	WEAK symbol<int(jmp_buf* Buf)> _setjmp{0x734CF8};
 
 	// Variables
+
+	WEAK symbol<CmdArgs> cmd_args{0x1C978D0};
 
 	WEAK symbol<int> g_script_error_level{0x20B21FC};
 	WEAK symbol<jmp_buf> g_script_error{0x20B4218};
