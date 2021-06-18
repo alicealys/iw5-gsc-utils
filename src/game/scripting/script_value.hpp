@@ -63,10 +63,9 @@ namespace scripting
 
 		const game::VariableValue& get_raw() const;
 
+		variable_value value_{};
 	private:
 		template <typename T>
 		T get() const;
-
-		variable_value value_{};
 	};
 }
