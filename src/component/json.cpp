@@ -143,7 +143,7 @@ namespace json
 		{
 			gsc::function::add("array", [](gsc::function_args args)
 			{
-				scripting::array array(args);
+				scripting::array array(args.get_raw());
 				return array.get_raw();
 			});
 
