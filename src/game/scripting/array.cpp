@@ -163,7 +163,7 @@ namespace scripting
 	unsigned int array::get_value_id(const std::string& key) const
 	{
 		const auto string_value = game::SL_GetString(key.data(), 0);
-		const auto variable_id = game::GetVariable(this->id_, string_value);
+		const auto variable_id = game::FindVariable(this->id_, string_value);
 
 		if (!variable_id)
 		{
@@ -175,7 +175,7 @@ namespace scripting
 
 	unsigned int array::get_value_id(const unsigned int index) const
 	{
-		const auto variable_id = game::GetVariable(this->id_, (index - 0x800000) & 0xFFFFFF);
+		const auto variable_id = game::FindVariable(this->id_, (index - 0x800000) & 0xFFFFFF);
 		if (!variable_id)
 		{
 			return game::GetNewArrayVariable(this->id_, index);
