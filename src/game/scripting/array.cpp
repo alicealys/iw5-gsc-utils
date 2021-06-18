@@ -56,7 +56,7 @@ namespace scripting
 
 		for (const auto& value : values)
 		{
-			add_array_value(this->id_, value);
+			this->push(value);
 		}
 	}
 
@@ -66,7 +66,7 @@ namespace scripting
 
 		for (const auto& value : values)
 		{
-			add_array_key_value(this->id_, value.first, value.second);
+			this->set(value.first, value.second);
 		}
 	}
 
@@ -117,7 +117,7 @@ namespace scripting
 
 	void array::push(script_value value) const
 	{
-		add_array_value(this->id_, value);
+		this->set(this->size(), value);
 	}
 
 	script_value array::get(const std::string& key) const
@@ -167,8 +167,7 @@ namespace scripting
 
 		if (!variable_id)
 		{
-			add_array_key_value(this->id_, key, {});
-			return this->get_value_id(key);
+			return game::GetNewVariable(this->id_, string_value);
 		}
 
 		return variable_id;
@@ -190,43 +189,39 @@ namespace scripting
 		const auto value = _value.get_raw();
 
 		const auto string_value = game::SL_GetString(key.data(), 0);
-		const auto variable_id = game::GetVariable(this->id_, string_value);
+		const auto variable_id = this->get_value_id(key);
 
-		if (variable_id)
+		if (!variable_id)
 		{
-			const auto variable = &game::scr_VarGlob->childVariableValue[variable_id + 0xC800 * (this->id_ & 1)];
-
-			game::AddRefToValue(value.type, value.u);
-			game::RemoveRefToValue(variable->type, variable->u.u);
-
-			variable->type = value.type;
-			variable->u.u = value.u;
-
 			return;
 		}
 
-		add_array_key_value(this->id_, key, _value);
+		const auto variable = &game::scr_VarGlob->childVariableValue[variable_id + 0xC800 * (this->id_ & 1)];
+
+		game::AddRefToValue(value.type, value.u);
+		game::RemoveRefToValue(variable->type, variable->u.u);
+
+		variable->type = value.type;
+		variable->u.u = value.u;
 	}
 
 	void array::set(const unsigned int index, const script_value& _value) const
 	{
 		const auto value = _value.get_raw();
-		const auto variable_id = game::GetVariable(this->id_, (index - 0x800000) & 0xFFFFFF);
+		const auto variable_id = this->get_value_id(index);
 
-		if (variable_id)
+		if (!variable_id)
 		{
-			const auto variable = &game::scr_VarGlob->childVariableValue[variable_id + 0xC800 * (this->id_ & 1)];
-
-			game::AddRefToValue(value.type, value.u);
-			game::RemoveRefToValue(variable->type, variable->u.u);
-
-			variable->type = value.type;
-			variable->u.u = value.u;
-
 			return;
 		}
 
-		add_array_value(this->id_, _value);
+		const auto variable = &game::scr_VarGlob->childVariableValue[variable_id + 0xC800 * (this->id_ & 1)];
+
+		game::AddRefToValue(value.type, value.u);
+		game::RemoveRefToValue(variable->type, variable->u.u);
+
+		variable->type = value.type;
+		variable->u.u = value.u;
 	}
 
 	entity array::get_raw() const
