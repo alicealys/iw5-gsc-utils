@@ -49,9 +49,10 @@ namespace json
 
 				if (!string_indexed)
 				{
-					obj.emplace_back(gsc_to_json(variable));
+					const auto index = (string_value - 0x800000) & 0xFFFFFF;
+					obj[index] = gsc_to_json(variable);
 				}
-				else 
+				else
 				{
 					obj.emplace(str, gsc_to_json(variable));
 				}
