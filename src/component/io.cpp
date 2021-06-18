@@ -6,6 +6,7 @@
 #include "game/scripting/event.hpp"
 #include "game/scripting/execution.hpp"
 #include "game/scripting/functions.hpp"
+#include "game/scripting/array.hpp"
 
 #include "gsc.hpp"
 
@@ -71,6 +72,79 @@ namespace io
 				free(buffer);
 
 				return result;
+			});
+
+			gsc::function::add("fileexists", [](gsc::function_args args)
+			{
+				const auto path = args[0].as<std::string>();
+				return utils::io::file_exists(path);
+			});
+
+			gsc::function::add("writefile", [](gsc::function_args args)
+			{
+				const auto path = args[0].as<std::string>();
+				const auto data = args[1].as<std::string>();
+
+				auto append = false;
+				if (args.size() > 2)
+				{
+					append = args[2].as<bool>();
+				}
+
+				return utils::io::write_file(path, data, append);
+			});
+
+			gsc::function::add("readfile", [](gsc::function_args args)
+			{
+				const auto path = args[0].as<std::string>();
+				return utils::io::read_file(path);
+			});
+
+			gsc::function::add("filesize", [](gsc::function_args args)
+			{
+				const auto path = args[0].as<std::string>();
+				return utils::io::file_size(path);
+			});
+
+			gsc::function::add("createdirectory", [](gsc::function_args args)
+			{
+				const auto path = args[0].as<std::string>();
+				return utils::io::create_directory(path);
+			});
+
+			gsc::function::add("directoryexists", [](gsc::function_args args)
+			{
+				const auto path = args[0].as<std::string>();
+				return utils::io::directory_exists(path);
+			});
+
+			gsc::function::add("directoryisempty", [](gsc::function_args args)
+			{
+				const auto path = args[0].as<std::string>();
+				return utils::io::directory_is_empty(path);
+			});
+
+			gsc::function::add("listfiles", [](gsc::function_args args)
+			{
+				const auto path = args[0].as<std::string>();
+				const auto files = utils::io::list_files(path);
+
+				scripting::array array;
+				for (const auto& file : files)
+				{
+					array.push(file);
+				}
+
+				return array.get_raw();
+			});
+
+			gsc::function::add("copyfolder", [](gsc::function_args args)
+			{
+				const auto source = args[0].as<std::string>();
+				const auto target = args[1].as<std::string>();
+				utils::io::copy_folder(source, target);
+
+				return scripting::script_value{};
 			});
 		}
 	};
