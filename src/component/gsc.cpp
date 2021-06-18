@@ -13,6 +13,32 @@
 
 namespace gsc
 {
+	function_args::function_args(std::vector<scripting::script_value> values)
+		: values_(values)
+	{
+	}
+
+	unsigned int function_args::size() const
+	{
+		return this->values_.size();
+	}
+
+	std::vector<scripting::script_value> function_args::get_raw() const
+	{
+		return this->values_;
+	}
+
+	scripting::script_value function_args::get(const int index) const
+	{
+		if (index >= this->values_.size())
+		{
+			throw std::runtime_error(utils::string::va("Insufficient arguments, got %i expected %i", 
+				this->values_.size(), index + 1));
+		}
+		
+		return this->values_[index];
+	}
+
 	std::unordered_map<unsigned, script_function> functions;
 	std::unordered_map<unsigned, script_method> methods;
 
@@ -50,7 +76,7 @@ namespace gsc
 
 		function_args get_arguments()
 		{
-			function_args args;
+			std::vector<scripting::script_value> args;
 
 			const auto top = game::scr_VmPub->top;
 
