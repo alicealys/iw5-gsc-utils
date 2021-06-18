@@ -7,6 +7,7 @@
 #include "game/scripting/event.hpp"
 #include "game/scripting/execution.hpp"
 #include "game/scripting/functions.hpp"
+#include "game/scripting/array.hpp"
 
 #include "gsc.hpp"
 
@@ -251,33 +252,6 @@ namespace gsc
 		}
 	}
 
-	unsigned int make_array()
-	{
-		unsigned int index = 0;
-		const auto variable = game::AllocVariable(&index);
-		variable->w.type = game::SCRIPT_ARRAY;
-		variable->u.f.prev = 0;
-		variable->u.f.next = 0;
-
-		return index;
-	}
-
-	void add_array_key_value(unsigned int parent_id, const std::string& _key, const scripting::script_value& value)
-	{
-		const auto key = game::SL_GetString(_key.data(), 0);
-
-		scripting::push_value(scripting::entity(parent_id));
-		scripting::push_value(value);
-		game::Scr_AddArrayStringIndexed(key);
-	}
-
-	void add_array_value(unsigned int parent_id, const scripting::script_value& value)
-	{
-		scripting::push_value(scripting::entity(parent_id));
-		scripting::push_value(value);
-		game::Scr_AddArray();
-	}
-
 	class component final : public component_interface
 	{
 	public:
@@ -317,14 +291,13 @@ namespace gsc
 				const auto pos = function.u.codePosValue;
 				command::add_script_command(name, [pos](const command::params& params)
 				{
-					const auto array = make_array();
+					scripting::array array;
 					for (auto i = 0; i < params.size(); i++)
 					{
-						add_array_value(array, params[i]);
+						array.push(params[i]);
 					}
 
-					const auto entity = scripting::entity(array);
-					scripting::exec_ent_thread(*game::levelEntityId, pos, {entity});
+					scripting::exec_ent_thread(*game::levelEntityId, pos, {array.get_raw()});
 				});
 
 				return {};

@@ -19,8 +19,4 @@ namespace gsc
 	{
 		void add(const std::string& name, const script_method& func);
 	}
-
-	unsigned int make_array();
-	void add_array_key_value(unsigned int parent_id, const std::string& _key, const scripting::script_value& value);
-	void add_array_value(unsigned int parent_id, const scripting::script_value& value);
 }

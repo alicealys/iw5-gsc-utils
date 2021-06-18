@@ -6,6 +6,7 @@
 #include "game/scripting/event.hpp"
 #include "game/scripting/execution.hpp"
 #include "game/scripting/functions.hpp"
+#include "game/scripting/array.hpp"
 
 #include "gsc.hpp"
 
@@ -19,45 +20,26 @@ namespace json
 
 		nlohmann::json entity_to_array(unsigned int id)
 		{
+			scripting::array array(id);
 			nlohmann::json obj;
+
 			auto string_indexed = -1;
-
-			const auto offset = 0xC800 * (id & 1);
-			auto current = game::scr_VarGlob->objectVariableChildren[id].firstChild;
-
-			for (auto i = offset + current; current; i = offset + current)
+			const auto keys = array.get_keys();
+			for (auto i = 0; i < keys.size(); i++)
 			{
-				const auto var = game::scr_VarGlob->childVariableValue[i];
-
-				if (var.type == game::SCRIPT_NONE)
-				{
-					current = var.nextSibling;
-					continue;
-				}
-
-				const auto string_value = (unsigned int)((unsigned __int8)var.name_lo + (var.k.keys.name_hi << 8));
-				const auto* str = game::SL_ConvertToString(string_value);
-
 				if (string_indexed == -1)
 				{
-					string_indexed = string_value < 0x40000 && str;
+					string_indexed = keys[i].is_string;
 				}
 
-				game::VariableValue variable{};
-				variable.type = (game::scriptType_e)var.type;
-				variable.u = var.u.u;
-
-				if (!string_indexed)
+				if (!string_indexed && keys[i].is_integer)
 				{
-					const auto index = (string_value - 0x800000) & 0xFFFFFF;
-					obj[index] = gsc_to_json(variable);
+					obj[keys[i].index] = gsc_to_json(array[keys[i].index]);
 				}
-				else
+				else if (string_indexed && keys[i].is_string)
 				{
-					obj.emplace(str, gsc_to_json(variable));
+					obj.emplace(keys[i].key, gsc_to_json(array[keys[i].key]));
 				}
-
-				current = var.nextSibling;
 			}
 
 			return obj;
@@ -128,25 +110,25 @@ namespace json
 				return obj.get<std::string>();
 			case (nlohmann::detail::value_t::array):
 			{
-				const auto arr = gsc::make_array();
+				scripting::array array;
 
 				for (const auto& [key, value] : obj.items())
 				{
-					gsc::add_array_value(arr, json_to_gsc(value));
+					array.push(json_to_gsc(value));
 				}
 
-				return scripting::entity(arr);
+				return array.get_raw();
 			}
 			case (nlohmann::detail::value_t::object):
 			{
-				const auto arr = gsc::make_array();
+				scripting::array array;
 
 				for (const auto& [key, value] : obj.items())
 				{
-					gsc::add_array_key_value(arr, key, json_to_gsc(value));
+					array[key] = json_to_gsc(value);
 				}
 
-				return scripting::entity(arr);
+				return array.get_raw();
 			}
 			}
 
@@ -161,19 +143,13 @@ namespace json
 		{
 			gsc::function::add("array", [](gsc::function_args args)
 			{
-				const auto array = gsc::make_array();
-
-				for (auto i = 0; i < args.size(); i++)
-				{
-					gsc::add_array_value(array, args[i]);
-				}
-
-				return scripting::entity(array);
+				scripting::array array(args);
+				return array.get_raw();
 			});
 
 			gsc::function::add("map", [](gsc::function_args args)
 			{
-				const auto array = gsc::make_array();
+				scripting::array array;
 
 				for (auto i = 0; i < args.size(); i += 2)
 				{
@@ -183,10 +159,10 @@ namespace json
 					}
 
 					const auto key = args[i].as<std::string>();
-					gsc::add_array_key_value(array, key, args[i + 1]);
+					array[key] = args[i + 1];
 				}
 
-				return scripting::entity(array);
+				return array.get_raw();
 			});
 
 			gsc::function::add("jsonparse", [](gsc::function_args args)

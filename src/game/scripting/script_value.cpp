@@ -1,7 +1,7 @@
 #include <stdinc.hpp>
 #include "script_value.hpp"
 #include "entity.hpp"
-
+#include "array.hpp"
 
 namespace scripting
 {
@@ -219,7 +219,7 @@ namespace scripting
 	 **************************************************************/
 
 	template <>
-	bool script_value::is<std::vector<script_value>>() const
+	bool script_value::is<array>() const
 	{
 		if (this->get_raw().type != game::SCRIPT_OBJECT)
 		{
@@ -230,6 +230,12 @@ namespace scripting
 		const auto type = game::scr_VarGlob->objectVariableValue[id].w.type;
 
 		return type == game::SCRIPT_ARRAY;
+	}
+
+	template <>
+	array script_value::get() const
+	{
+		return array(this->get_raw().u.uintValue);
 	}
 
 	/***************************************************************

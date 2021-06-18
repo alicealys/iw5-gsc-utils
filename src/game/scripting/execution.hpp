@@ -34,4 +34,8 @@ namespace scripting
 	script_value get_entity_field(const entity& entity, const std::string& field);
 
 	void notify(const entity& entity, const std::string& event, const std::vector<script_value>& arguments);
+
+	unsigned int make_array();
+	void add_array_key_value(unsigned int parent_id, const std::string& _key, const scripting::script_value& value);
+	void add_array_value(unsigned int parent_id, const scripting::script_value& value);
 }
