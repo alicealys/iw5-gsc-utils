@@ -280,24 +280,4 @@ namespace scripting
 
 		return index;
 	}
-
-	void add_array_key_value(unsigned int parent_id, const std::string& _key, const scripting::script_value& value)
-	{
-		stack_isolation _;
-
-		const auto key = game::SL_GetString(_key.data(), 0);
-
-		scripting::push_value(scripting::entity(parent_id));
-		scripting::push_value(value);
-		game::Scr_AddArrayStringIndexed(key);
-	}
-
-	void add_array_value(unsigned int parent_id, const scripting::script_value& value)
-	{
-		stack_isolation _;
-
-		scripting::push_value(scripting::entity(parent_id));
-		scripting::push_value(value);
-		game::Scr_AddArray();
-	}
 }
