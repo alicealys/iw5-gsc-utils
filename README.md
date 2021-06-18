@@ -44,6 +44,9 @@ This plugin adds some useful functions/methods to IW5's GSC VM
   }
   ```
 # IO
+
+The basepath for all IO functions is `Plutonium/storage/iw5`
+
 * `fopen(path, mode)`: Opens a file of given name with given mode, returns a file stream.
 * `fwrite(stream, text)`: Writes a string to a stream.
 * `fread(stream)`: Reads entire file.
@@ -64,6 +67,15 @@ This plugin adds some useful functions/methods to IW5's GSC VM
       fclose(file);
   }
   ```
+ * `fileExists(path)`: Returns true if the file exists.
+ * `writeFile(path, data[, append])`: Creates a file if it doesn't exist and writes/appends text to it.
+ * `readFile(path)`: Reads a file.
+ * `fileSize(path)`: Returns file size in bytes.
+ * `createDirectory(path)`: Creates a directory.
+ * `directoryExists(path)`: Returns true if the directory exists.
+ * `directoryIsEmpty(path)`: Returns true if the directory is empty.
+ * `listFiles(path)`: Returns the list of files in the directory as an array.
+ * `copyFolder(source, target)`: Copies a folder.
 
 # JSON
 
