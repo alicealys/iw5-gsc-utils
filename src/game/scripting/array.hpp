@@ -30,20 +30,23 @@ namespace scripting
 		array(std::unordered_map<std::string, script_value>);
 
 		std::vector<array_key> get_keys() const;
+		unsigned int size() const;
 
-		int size() const;
-		void push(script_value) const;
+		unsigned int push(script_value) const;
+		void erase(const unsigned int index) const;
+		void erase(const std::string& key) const;
+		script_value pop() const;
 
 		script_value get(const std::string&) const;
 		script_value get(const unsigned int) const;
+
+		void set(const std::string&, const script_value&) const;
+		void set(const unsigned int, const script_value&) const;
 
 		unsigned int get_entity_id() const;
 
 		unsigned int get_value_id(const std::string&) const;
 		unsigned int get_value_id(const unsigned int) const;
-
-		void set(const std::string&, const script_value&) const;
-		void set(const unsigned int, const script_value&) const;
 
 		entity get_raw() const;
 
