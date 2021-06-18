@@ -33,6 +33,7 @@ namespace game
 	WEAK symbol<unsigned int(unsigned int parentId, unsigned int name)> GetNewVariable{0x566390};
 	WEAK symbol<unsigned int(unsigned int parentId, unsigned int unsignedValue)> GetNewArrayVariable{0x5668C0};
 	WEAK symbol<void(unsigned int parentId, unsigned int id, VariableValue* value)> SetNewVariableValue{0x5658D0};
+	WEAK symbol<void(unsigned int parentId, unsigned int index)> RemoveVariableValue{0x566500};
 
 	WEAK symbol<const float* (const float* v)> Scr_AllocVector{0x565680};
 	WEAK symbol<void()> Scr_ClearOutParams{0x569010};

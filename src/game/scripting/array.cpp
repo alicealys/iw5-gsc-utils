@@ -110,14 +110,41 @@ namespace scripting
 		return result;
 	}
 
-	int array::size() const
+	unsigned int array::size() const
 	{
 		return game::Scr_GetSelf(this->id_);
 	}
 
-	void array::push(script_value value) const
+	unsigned int array::push(script_value value) const
 	{
 		this->set(this->size(), value);
+		return this->size();
+	}
+
+	void array::erase(const unsigned int index) const
+	{
+		const auto variable_id = game::FindVariable(this->id_, (index - 0x800000) & 0xFFFFFF);
+		if (variable_id)
+		{
+			game::RemoveVariableValue(this->id_, variable_id);
+		}
+	}
+
+	void array::erase(const std::string& key) const
+	{
+		const auto string_value = game::SL_GetString(key.data(), 0);
+		const auto variable_id = game::FindVariable(this->id_, string_value);
+		if (variable_id)
+		{
+			game::RemoveVariableValue(this->id_, variable_id);
+		}
+	}
+
+	script_value array::pop() const
+	{
+		const auto value = this->get(this->size() - 1);
+		this->erase(this->size() - 1);
+		return value;
 	}
 
 	script_value array::get(const std::string& key) const
@@ -153,35 +180,6 @@ namespace scripting
 		variable.type = (game::scriptType_e)value.type;
 
 		return variable;
-	}
-
-	unsigned int array::get_entity_id() const
-	{
-		return this->id_;
-	}
-
-	unsigned int array::get_value_id(const std::string& key) const
-	{
-		const auto string_value = game::SL_GetString(key.data(), 0);
-		const auto variable_id = game::FindVariable(this->id_, string_value);
-
-		if (!variable_id)
-		{
-			return game::GetNewVariable(this->id_, string_value);
-		}
-
-		return variable_id;
-	}
-
-	unsigned int array::get_value_id(const unsigned int index) const
-	{
-		const auto variable_id = game::FindVariable(this->id_, (index - 0x800000) & 0xFFFFFF);
-		if (!variable_id)
-		{
-			return game::GetNewArrayVariable(this->id_, index);
-		}
-
-		return variable_id;
 	}
 
 	void array::set(const std::string& key, const script_value& _value) const
@@ -222,6 +220,35 @@ namespace scripting
 
 		variable->type = value.type;
 		variable->u.u = value.u;
+	}
+
+	unsigned int array::get_entity_id() const
+	{
+		return this->id_;
+	}
+
+	unsigned int array::get_value_id(const std::string& key) const
+	{
+		const auto string_value = game::SL_GetString(key.data(), 0);
+		const auto variable_id = game::FindVariable(this->id_, string_value);
+
+		if (!variable_id)
+		{
+			return game::GetNewVariable(this->id_, string_value);
+		}
+
+		return variable_id;
+	}
+
+	unsigned int array::get_value_id(const unsigned int index) const
+	{
+		const auto variable_id = game::FindVariable(this->id_, (index - 0x800000) & 0xFFFFFF);
+		if (!variable_id)
+		{
+			return game::GetNewArrayVariable(this->id_, index);
+		}
+
+		return variable_id;
 	}
 
 	entity array::get_raw() const
