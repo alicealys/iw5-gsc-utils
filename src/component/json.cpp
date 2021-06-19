@@ -9,6 +9,7 @@
 #include "game/scripting/array.hpp"
 
 #include "gsc.hpp"
+#include "json.hpp"
 
 #include <json.hpp>
 
@@ -134,6 +135,11 @@ namespace json
 
 			return {};
 		}
+	}
+
+	std::string gsc_to_string(const scripting::script_value& value)
+	{
+		return gsc_to_json(value).dump();
 	}
 
 	class component final : public component_interface
