@@ -122,7 +122,7 @@ namespace gsc
 					return_value(result);
 				}
 			}
-			catch (std::exception e)
+			catch (const std::exception& e)
 			{
 				printf("************** Script execution error **************\n");
 				printf("Error executing function %s\n", function_name(id).data());
@@ -148,7 +148,7 @@ namespace gsc
 					return_value(result);
 				}
 			}
-			catch (std::exception e)
+			catch (const std::exception& e)
 			{
 				printf("************** Script execution error **************\n");
 				printf("Error executing method %s\n", method_name(id).data());
