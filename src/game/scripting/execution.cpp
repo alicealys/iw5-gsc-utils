@@ -155,8 +155,7 @@ namespace scripting
 		return get_return_value();
 	}
 
-	script_value call_script_function(const entity& entity, const std::string& filename,
-		const std::string& function, const std::vector<script_value>& arguments)
+	const char* get_function_pos(const std::string& filename, const std::string& function)
 	{
 		if (scripting::script_function_table.find(filename) == scripting::script_function_table.end())
 		{
@@ -164,14 +163,18 @@ namespace scripting
 		};
 
 		const auto functions = scripting::script_function_table[filename];
-
 		if (functions.find(function) == functions.end())
 		{
 			throw std::runtime_error("Function '" + function + "' in file '" + filename + "' not found");
 		}
 
-		const auto pos = functions.at(function);
+		return functions.at(function);
+	}
 
+	script_value call_script_function(const entity& entity, const std::string& filename,
+		const std::string& function, const std::vector<script_value>& arguments)
+	{
+		const auto pos = get_function_pos(filename, function);
 		return exec_ent_thread(entity, pos, arguments);
 	}
 

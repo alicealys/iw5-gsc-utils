@@ -12,4 +12,5 @@ namespace scripting
 
 	script_function find_function(const std::string& name, const bool prefer_global);
 	int find_token_id(const std::string& name);
+	std::string find_token(unsigned int id);
 }
