@@ -13,6 +13,8 @@
 
 namespace gsc
 {
+	std::unordered_map<unsigned, unsigned> replaced_functions;
+
 	function_args::function_args(std::vector<scripting::script_value> values)
 		: values_(values)
 	{
@@ -203,9 +205,9 @@ namespace gsc
 
 		void get_replaced_pos(unsigned int pos)
 		{
-			if (scripting::replaced_functions.find(pos) != scripting::replaced_functions.end())
+			if (replaced_functions.find(pos) != replaced_functions.end())
 			{
-				replaced_pos = scripting::replaced_functions[pos];
+				replaced_pos = replaced_functions[pos];
 			}
 		}
 
@@ -299,7 +301,7 @@ namespace gsc
 					throw std::runtime_error("Invalid type");
 				}
 
-				scripting::replaced_functions[what.u.uintValue] = with.u.uintValue;
+				replaced_functions[what.u.uintValue] = with.u.uintValue;
 
 				return {};
 			});

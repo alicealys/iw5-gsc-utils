@@ -2,6 +2,8 @@
 
 namespace gsc
 {
+	extern std::unordered_map<unsigned, unsigned> replaced_functions;
+
 	class function_args
 	{
 	public:

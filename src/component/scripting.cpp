@@ -8,12 +8,12 @@
 #include "game/scripting/execution.hpp"
 #include "game/scripting/functions.hpp"
 
+#include "gsc.hpp"
+
 namespace scripting
 {
 	std::unordered_map<int, std::unordered_map<std::string, int>> fields_table;
-	std::unordered_map<std::string, std::unordered_map<std::string, char*>> script_function_table;
-
-	std::unordered_map<unsigned, unsigned> replaced_functions;
+	std::unordered_map<std::string, std::unordered_map<std::string, const char*>> script_function_table;
 
 	namespace
 	{
@@ -23,8 +23,10 @@ namespace scripting
 		utils::hook::detour scr_load_level_hook;
 		utils::hook::detour g_shutdown_game_hook;
 
-		utils::hook::detour scr_emit_function_hook;
-		utils::hook::detour scr_end_load_scripts_hook;
+		utils::hook::detour scr_set_thread_position_hook;
+		utils::hook::detour process_script_hook;
+
+		std::string current_file;
 
 		void vm_notify_stub(const unsigned int notify_list_owner_id, const unsigned int string_value,
 			                game::VariableValue* top)
@@ -71,57 +73,33 @@ namespace scripting
 		void g_shutdown_game_stub(const int free_scripts)
 		{
 			command::clear_script_commands();
-			replaced_functions.clear();
+			gsc::replaced_functions.clear();
 			g_shutdown_game_hook.invoke<void>(free_scripts);
 		}
 
-		char* function_pos(unsigned int filename, unsigned int name)
+		void process_script_stub(const char* filename)
 		{
-			const auto scripts_pos = *reinterpret_cast<int*>(0x1D6EB14);
+			current_file = filename;
 
-			const auto v2 = game::FindVariable(scripts_pos, filename);
-
-			const auto v3 = game::FindObject(scripts_pos, v2);
-			const auto v4 = game::FindVariable(v3, name);
-
-			if (!v2 || !v3 || !v4)
+			const auto file_id = atoi(filename);
+			if (file_id)
 			{
-				return 0;
+				current_file = scripting::file_list[file_id];
 			}
 
-			return utils::hook::invoke<char*>(0x5659C0, v3, v4);
+			process_script_hook.invoke<void>(filename);
 		}
 
-		void scr_emit_function_stub(unsigned int filename, unsigned int threadName, char* codePos)
+		void scr_set_thread_position_stub(unsigned int threadName, const char* codePos)
 		{
-			const auto* name = game::SL_ConvertToString(filename);
-			const auto filename_id = atoi(name);
+			const auto function_name = scripting::find_token(threadName);
 
-			for (const auto& entry : scripting::file_list)
+			if (!function_name.empty())
 			{
-				if (entry.first == filename_id)
-				{
-					if (script_function_table.find(entry.second) == script_function_table.end())
-					{
-						script_function_table[entry.second] = {};
-					}
-
-					for (const auto& token : scripting::token_map)
-					{
-						if (token.second == threadName)
-						{
-							const auto pos = function_pos(filename, threadName);
-
-							if (pos)
-							{
-								script_function_table[entry.second][token.first] = pos;
-							}
-						}
-					}
-				}
+				script_function_table[current_file][function_name] = codePos;
 			}
 
-			scr_emit_function_hook.invoke<void>(filename, threadName, codePos);
+			scr_set_thread_position_hook.invoke<void>(threadName, codePos);
 		}
 	}
 
@@ -134,6 +112,10 @@ namespace scripting
 			g_shutdown_game_hook.create(0x50C100, g_shutdown_game_stub);
 
 			scr_add_class_field_hook.create(0x567CD0, scr_add_class_field_stub);
+			vm_notify_hook.create(0x569720, vm_notify_stub);
+
+			scr_set_thread_position_hook.create(0x5616D0, scr_set_thread_position_stub);
+			process_script_hook.create(0x56B130, process_script_stub);
 		}
 	};
 }
