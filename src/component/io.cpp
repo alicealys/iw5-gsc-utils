@@ -9,6 +9,7 @@
 #include "game/scripting/array.hpp"
 
 #include "gsc.hpp"
+#include "json.hpp"
 
 namespace io
 {
@@ -19,6 +20,20 @@ namespace io
 		{
 			const auto path = game::Dvar_FindVar("fs_basegame")->current.string;
 			std::filesystem::current_path(path);
+
+			gsc::function::add("jsonprint", [](const gsc::function_args& args) -> scripting::script_value
+			{
+				std::string buffer;
+
+				for (const auto arg : args.get_raw())
+				{
+					buffer.append(json::gsc_to_string(arg));
+					buffer.append("\t");
+				}
+
+				printf("%s\n", buffer.data());
+				return {};
+			});
 
 			gsc::function::add("fremove", [](const gsc::function_args& args)
 			{
