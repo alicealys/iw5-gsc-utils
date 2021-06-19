@@ -141,13 +141,13 @@ namespace json
 	public:
 		void post_unpack() override
 		{
-			gsc::function::add("array", [](gsc::function_args args)
+			gsc::function::add("array", [](const gsc::function_args& args)
 			{
 				scripting::array array(args.get_raw());
 				return array.get_raw();
 			});
 
-			gsc::function::add("map", [](gsc::function_args args)
+			gsc::function::add("map", [](const gsc::function_args& args)
 			{
 				scripting::array array;
 
@@ -165,7 +165,7 @@ namespace json
 				return array.get_raw();
 			});
 
-			gsc::function::add("jsonparse", [](gsc::function_args args)
+			gsc::function::add("jsonparse", [](const gsc::function_args& args)
 			{
 				const auto json = args[0].as<std::string>();
 				const auto obj = nlohmann::json::parse(json);
@@ -173,7 +173,7 @@ namespace json
 				return json_to_gsc(obj);
 			});
 
-			gsc::function::add("jsonserialize", [](gsc::function_args args)
+			gsc::function::add("jsonserialize", [](const gsc::function_args& args)
 			{
 				const auto value = args[0];
 				auto indent = -1;

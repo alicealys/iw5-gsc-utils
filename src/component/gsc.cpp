@@ -8,12 +8,13 @@
 #include "game/scripting/execution.hpp"
 #include "game/scripting/functions.hpp"
 #include "game/scripting/array.hpp"
+#include "game/scripting/function.hpp"
 
 #include "gsc.hpp"
 
 namespace gsc
 {
-	std::unordered_map<unsigned, unsigned> replaced_functions;
+	std::unordered_map<const char*, const char*> replaced_functions;
 
 	function_args::function_args(std::vector<scripting::script_value> values)
 		: values_(values)
@@ -201,9 +202,9 @@ namespace gsc
 			}
 		}
 
-		unsigned int replaced_pos = 0;
+		const char* replaced_pos = 0;
 
-		void get_replaced_pos(unsigned int pos)
+		void get_replaced_pos(const char* pos)
 		{
 			if (replaced_functions.find(pos) != replaced_functions.end())
 			{
@@ -285,28 +286,23 @@ namespace gsc
 	public:
 		void post_unpack() override
 		{
-			function::add("executecommand", [](function_args args) -> scripting::script_value
+			function::add("executecommand", [](const function_args& args) -> scripting::script_value
 			{
 				game::Cbuf_AddText(0, args[0].as<const char*>());
 				return {};
 			});
 
-			function::add("replacefunc", [](function_args args) -> scripting::script_value
+			function::add("replacefunc", [](const function_args& args) -> scripting::script_value
 			{
-				const auto what = args[0].get_raw();
-				const auto with = args[1].get_raw();
+				const auto what = args[0].as<scripting::function>();
+				const auto with = args[1].as<scripting::function>();
 
-				if (what.type != game::SCRIPT_FUNCTION || with.type != game::SCRIPT_FUNCTION)
-				{
-					throw std::runtime_error("Invalid type");
-				}
-
-				replaced_functions[what.u.uintValue] = with.u.uintValue;
+				replaced_functions[what.get_pos()] = with.get_pos();
 
 				return {};
 			});
 
-			function::add("addcommand", [](function_args args) -> scripting::script_value
+			function::add("addcommand", [](const function_args& args) -> scripting::script_value
 			{
 				const auto name = args[0].as<std::string>();
 				const auto function = args[1].get_raw();
@@ -331,7 +327,7 @@ namespace gsc
 				return {};
 			});
 
-			function::add("say", [](function_args args) -> scripting::script_value
+			function::add("say", [](const function_args& args) -> scripting::script_value
 			{
 				const auto message = args[0].as<std::string>();
 				game::SV_GameSendServerCommand(-1, 0, utils::string::va("%c \"%s\"", 84, message.data()));
@@ -339,7 +335,7 @@ namespace gsc
 				return {};
 			});
 
-			method::add("tell", [](game::scr_entref_t ent, function_args args) -> scripting::script_value
+			method::add("tell", [](const game::scr_entref_t ent, const function_args& args) -> scripting::script_value
 			{
 				if (ent.classnum != 0)
 				{

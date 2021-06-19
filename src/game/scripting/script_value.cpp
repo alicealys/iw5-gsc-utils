@@ -2,6 +2,7 @@
 #include "script_value.hpp"
 #include "entity.hpp"
 #include "array.hpp"
+#include "function.hpp"
 
 namespace scripting
 {
@@ -261,9 +262,15 @@ namespace scripting
 	 **************************************************************/
 
 	template <>
-	bool script_value::is<std::function<void()>>() const
+	bool script_value::is<function>() const
 	{
 		return this->get_raw().type == game::SCRIPT_FUNCTION;
+	}
+
+	template <>
+	function script_value::get() const
+	{
+		return function(this->get_raw().u.codePosValue);
 	}
 
 	/***************************************************************

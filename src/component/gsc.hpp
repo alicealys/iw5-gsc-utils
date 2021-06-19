@@ -2,7 +2,7 @@
 
 namespace gsc
 {
-	extern std::unordered_map<unsigned, unsigned> replaced_functions;
+	extern std::unordered_map<const char*, const char*> replaced_functions;
 
 	class function_args
 	{
@@ -24,8 +24,8 @@ namespace gsc
 	using builtin_function = void(*)();
 	using builtin_method = void(*)(game::scr_entref_t);
 
-	using script_function = std::function<scripting::script_value(function_args)>;
-	using script_method = std::function<scripting::script_value(game::scr_entref_t, function_args)>;
+	using script_function = std::function<scripting::script_value(const function_args&)>;
+	using script_method = std::function<scripting::script_value(const game::scr_entref_t, const function_args&)>;
 
 	namespace function
 	{
