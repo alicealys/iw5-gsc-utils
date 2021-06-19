@@ -339,7 +339,7 @@ namespace gsc
 			{
 				if (ent.classnum != 0)
 				{
-					throw std::runtime_error("Invalid type");
+					throw std::runtime_error("Invalid entity");
 				}
 
 				const auto client = ent.entnum;

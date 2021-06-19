@@ -3,6 +3,7 @@
 
 #include "scheduler.hpp"
 #include "command.hpp"
+#include "userinfo.hpp"
 
 #include "game/scripting/event.hpp"
 #include "game/scripting/execution.hpp"
@@ -46,7 +47,9 @@ namespace scripting
 
 				if (e.name == "connected")
 				{
-					scripting::clear_entity_fields(e.entity);
+					const auto player = e.arguments[0].as<scripting::entity>();
+					const auto client = player.call("getentitynumber").as<int>();
+					userinfo::clear_client_overrides(client);
 				}
 			}
 
@@ -72,6 +75,7 @@ namespace scripting
 
 		void g_shutdown_game_stub(const int free_scripts)
 		{
+			userinfo::clear_overrides();
 			command::clear_script_commands();
 			gsc::replaced_functions.clear();
 			g_shutdown_game_hook.invoke<void>(free_scripts);

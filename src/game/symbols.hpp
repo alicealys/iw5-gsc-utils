@@ -16,6 +16,7 @@ namespace game
 
 	WEAK symbol<void(unsigned int weapon, bool isAlternate, char* output, unsigned int maxStringLen)> BG_GetWeaponNameComplete{0x42F760};
 
+	WEAK symbol<void(int client)> ClientUserinfoChanged{0x4FADB0};
 	WEAK symbol<const char*(int index)> ConcatArgs{0x502150};
 	WEAK symbol<void(int localClientNum, const char* text)> Cbuf_AddText{0x545680};
 	WEAK symbol<void(const char* cmdName, void(), cmd_function_t* allocedCmd)> Cmd_AddCommandInternal{0x545DF0};
