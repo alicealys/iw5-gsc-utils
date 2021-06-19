@@ -10,7 +10,7 @@ This plugin adds some useful functions/methods to IW5's GSC VM
   ```c
   init()
   {
-    replaceFunc(maps\mp\gametypes\_damage::Callback_PlayerDamage, ::callbackPlayerDamage);
+      replaceFunc(maps\mp\gametypes\_damage::Callback_PlayerDamage, ::callbackPlayerDamage);
   }
 
   callbackPlayerDamage(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, vPoint, vDir, sHitLoc, timeOffset)
