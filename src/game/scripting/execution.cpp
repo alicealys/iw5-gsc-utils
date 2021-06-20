@@ -283,4 +283,14 @@ namespace scripting
 
 		return index;
 	}
+
+	unsigned int make_object()
+	{
+		unsigned int index = 0;
+		const auto variable = game::AllocVariable(&index);
+		variable->w.type = game::SCRIPT_STRUCT;
+		variable->u.f.prev = 0;
+
+		return index;
+	}
 }
