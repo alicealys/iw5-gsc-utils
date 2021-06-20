@@ -85,6 +85,8 @@ namespace scripting
 		{
 			current_file = filename;
 
+			printf("%s\n", filename);
+
 			const auto file_id = atoi(filename);
 			if (file_id)
 			{

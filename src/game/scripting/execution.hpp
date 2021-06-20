@@ -36,4 +36,5 @@ namespace scripting
 	void notify(const entity& entity, const std::string& event, const std::vector<script_value>& arguments);
 
 	unsigned int make_array();
+	unsigned int make_object();
 }

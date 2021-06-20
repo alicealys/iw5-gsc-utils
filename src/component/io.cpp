@@ -161,6 +161,26 @@ namespace io
 
 				return scripting::script_value{};
 			});
+
+			gsc::function::add("httpget", [](const gsc::function_args& args) -> scripting::script_value
+			{
+				const auto url = args[0].as<std::string>();
+				const auto object = scripting::entity(scripting::make_object());
+
+				scheduler::once([object, url]()
+				{
+					const auto result = utils::http::get_data(url.data());
+					scheduler::once([object, result]()
+					{
+						const auto value = result.has_value()
+							? result.value().substr(0, 0x5000)
+							: "";
+						scripting::notify(object, "done", {value});
+					});
+				}, scheduler::pipeline::async);
+			
+				return object;
+			});
 		}
 	};
 }
