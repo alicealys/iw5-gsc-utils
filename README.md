@@ -43,6 +43,15 @@ This plugin adds some useful functions/methods to IW5's GSC VM
       }
   }
   ```
+# Player
+* `say(message)`: Prints a message to all players' chat.
+
+* `self tell(message)`: Prints a message to the player's chat.
+* `self setName(name)`: Sets a player's name.
+* `self resetName(name)`: Resets a player's name to its original.
+* `self setClantag(name)`: Sets a player's clantag.
+* `self resetClantag(name)`: Resets a player's clantag to its original.
+* `self removeClantag(name)`: Removes a player's clantag.
 # IO
 
 The basepath for all IO functions is `Plutonium/storage/iw5`
@@ -217,6 +226,6 @@ The basepath for all IO functions is `Plutonium/storage/iw5`
       */
   }
   ```
- 
+ * `jsonPrint(...)`: Prints values as json.
  # Credits
  * [xensik](https://github.com/xensik)
