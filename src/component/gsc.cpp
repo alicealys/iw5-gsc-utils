@@ -305,15 +305,8 @@ namespace gsc
 			function::add("addcommand", [](const function_args& args) -> scripting::script_value
 			{
 				const auto name = args[0].as<std::string>();
-				const auto function = args[1].get_raw();
-
-				if (function.type != game::SCRIPT_FUNCTION)
-				{
-					throw std::runtime_error("Invalid type");
-				}
-
-				const auto pos = function.u.codePosValue;
-				command::add_script_command(name, [pos](const command::params& params)
+				const auto function = args[1].as<scripting::function>();
+				command::add_script_command(name, [function](const command::params& params)
 				{
 					scripting::array array;
 					for (auto i = 0; i < params.size(); i++)
@@ -321,7 +314,7 @@ namespace gsc
 						array.push(params[i]);
 					}
 
-					scripting::exec_ent_thread(*game::levelEntityId, pos, {array.get_raw()});
+					function({array.get_raw()});
 				});
 
 				return {};
