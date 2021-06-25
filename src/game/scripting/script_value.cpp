@@ -103,6 +103,24 @@ namespace scripting
 		this->value_ = variable;
 	}
 
+	script_value::script_value(const array& value)
+	{
+		game::VariableValue variable{};
+		variable.type = game::SCRIPT_OBJECT;
+		variable.u.pointerValue = value.get_entity_id();
+
+		this->value_ = variable;
+	}
+
+	script_value::script_value(const function& value)
+	{
+		game::VariableValue variable{};
+		variable.type = game::SCRIPT_OBJECT;
+		variable.u.codePosValue = value.get_pos();
+
+		this->value_ = variable;
+	}
+
 	/***************************************************************
 	 * Integer
 	 **************************************************************/
