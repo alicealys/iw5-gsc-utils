@@ -6,6 +6,8 @@
 namespace scripting
 {
 	class entity;
+	class array;
+	class function;
 
 	class script_value
 	{
@@ -28,6 +30,10 @@ namespace scripting
 		script_value(const entity& value);
 
 		script_value(const vector& value);
+
+		script_value(const array& value);
+
+		script_value(const function& value);
 
 		template <typename T>
 		bool is() const;

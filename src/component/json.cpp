@@ -168,7 +168,7 @@ namespace json
 					array[key] = args[i + 1];
 				}
 
-				return array.get_raw();
+				return array;
 			});
 
 			gsc::function::add("jsonparse", [](const gsc::function_args& args)

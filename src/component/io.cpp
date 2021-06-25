@@ -150,7 +150,7 @@ namespace io
 					array.push(file);
 				}
 
-				return array.get_raw();
+				return array;
 			});
 
 			gsc::function::add("copyfolder", [](const gsc::function_args& args)
