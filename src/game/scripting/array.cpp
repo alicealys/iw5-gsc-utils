@@ -50,6 +50,12 @@ namespace scripting
 	{
 	}
 
+	array::array(array&& other) noexcept
+	{
+		this->id_ = other.id_;
+		other.id_ = 0;
+	}
+
 	array::array()
 	{
 		this->id_ = make_array();
