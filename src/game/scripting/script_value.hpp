@@ -49,15 +49,15 @@ namespace scripting
 			return get<T>();
 		}
 
-		template <typename T>
+		template <typename T, typename I = int>
 		T* as_ptr()
 		{
-			if (!this->is<int>())
+			if (!this->is<I>())
 			{
 				throw std::runtime_error("Invalid type");
 			}
 
-			const auto value = this->get<int>();
+			const auto value = this->get<I>();
 
 			if (!value)
 			{

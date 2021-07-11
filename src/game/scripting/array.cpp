@@ -40,19 +40,26 @@ namespace scripting
 		this->value_ = value;
 	}
 
-	array::array(unsigned int id)
+	array::array(const unsigned int id)
 		: id_(id)
+	{
+		this->add();
+	}
+
+	array::array(const array& other) : array(other.id_)
 	{
 	}
 
 	array::array()
 	{
 		this->id_ = make_array();
+		this->add();
 	}
 	
 	array::array(std::vector<script_value> values)
 	{
 		this->id_ = make_array();
+		this->add();
 
 		for (const auto& value : values)
 		{
@@ -63,10 +70,56 @@ namespace scripting
 	array::array(std::unordered_map<std::string, script_value> values)
 	{
 		this->id_ = make_array();
+		this->add();
 
 		for (const auto& value : values)
 		{
 			this->set(value.first, value.second);
+		}
+	}
+
+	array::~array()
+	{
+		this->release();
+	}
+
+	array& array::operator=(const array& other)
+	{
+		if (&other != this)
+		{
+			this->release();
+			this->id_ = other.id_;
+			this->add();
+		}
+
+		return *this;
+	}
+
+	array& array::operator=(array&& other) noexcept
+	{
+		if (&other != this)
+		{
+			this->release();
+			this->id_ = other.id_;
+			other.id_ = 0;
+		}
+
+		return *this;
+	}
+
+	void array::add() const
+	{
+		if (this->id_)
+		{
+			game::AddRefToValue(game::SCRIPT_OBJECT, {static_cast<int>(this->id_)});
+		}
+	}
+
+	void array::release() const
+	{
+		if (this->id_)
+		{
+			game::RemoveRefToValue(game::SCRIPT_OBJECT, {static_cast<int>(this->id_)});
 		}
 	}
 
@@ -147,6 +200,18 @@ namespace scripting
 		return value;
 	}
 
+	script_value array::get(const array_key& key) const
+	{
+		if (key.is_integer)
+		{
+			return this->get(key.index);
+		}
+		else
+		{
+			return this->get(key.key);
+		}
+	}
+
 	script_value array::get(const std::string& key) const
 	{
 		const auto string_value = game::SL_GetString(key.data(), 0);
@@ -180,6 +245,18 @@ namespace scripting
 		variable.type = (game::scriptType_e)value.type;
 
 		return variable;
+	}
+
+	void array::set(const array_key& key, const script_value& value) const
+	{
+		if (key.is_integer)
+		{
+			this->set(key.index, value);
+		}
+		else
+		{
+			this->set(key.key, value);
+		}
 	}
 
 	void array::set(const std::string& key, const script_value& _value) const

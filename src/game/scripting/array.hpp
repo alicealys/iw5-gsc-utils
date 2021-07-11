@@ -7,15 +7,15 @@ namespace scripting
 	{
 		bool is_string = false;
 		bool is_integer = false;
-		int index{};
+		unsigned int index{};
 		std::string key{};
 	};
 
 	class array_value : public script_value
 	{
 	public:
-		array_value(unsigned int parent_id, unsigned int id);
-		void operator=(const script_value& value);
+		array_value(unsigned int, unsigned int);
+		void operator=(const script_value&);
 	private:
 		unsigned int id_;
 		unsigned int parent_id_;
@@ -25,21 +25,35 @@ namespace scripting
 	{
 	public:
 		array();
-		array(unsigned int);
+		array(const unsigned int);
+
 		array(std::vector<script_value>);
 		array(std::unordered_map<std::string, script_value>);
+
+		array(const array& other);
+		array(array&& other) noexcept;
+
+		~array();
+
+		array& operator=(const array& other);
+		array& operator=(array&& other) noexcept;
+
+		void add() const;
+		void release() const;
 
 		std::vector<array_key> get_keys() const;
 		unsigned int size() const;
 
 		unsigned int push(script_value) const;
-		void erase(const unsigned int index) const;
-		void erase(const std::string& key) const;
+		void erase(const unsigned int) const;
+		void erase(const std::string&) const;
 		script_value pop() const;
 
+		script_value get(const array_key&) const;
 		script_value get(const std::string&) const;
 		script_value get(const unsigned int) const;
 
+		void set(const array_key&, const script_value&) const;
 		void set(const std::string&, const script_value&) const;
 		void set(const unsigned int, const script_value&) const;
 
