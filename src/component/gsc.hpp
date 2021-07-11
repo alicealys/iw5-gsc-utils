@@ -9,8 +9,8 @@ namespace gsc
 	public:
 		function_args(std::vector<scripting::script_value>);
 
-		unsigned int function_args::size() const;
-		std::vector<scripting::script_value> function_args::get_raw() const;
+		unsigned int size() const;
+		std::vector<scripting::script_value> get_raw() const;
 		scripting::script_value get(const int index) const;
 
 		scripting::script_value operator[](const int index) const

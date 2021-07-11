@@ -15,7 +15,7 @@ namespace scripting
 	{
 	public:
 		array_value(unsigned int parent_id, unsigned int id);
-		void array_value::operator=(const script_value& value);
+		void operator=(const script_value& value);
 	private:
 		unsigned int id_;
 		unsigned int parent_id_;
@@ -50,12 +50,12 @@ namespace scripting
 
 		entity get_raw() const;
 
-		array_value array::operator[](const int index) const
+		array_value operator[](const int index) const
 		{
 			return {this->id_, this->get_value_id(index)};
 		}
 
-		array_value array::operator[](const std::string& key) const
+		array_value operator[](const std::string& key) const
 		{
 			return {this->id_, this->get_value_id(key)};
 		}
