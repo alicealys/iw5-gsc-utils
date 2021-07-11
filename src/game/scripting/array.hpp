@@ -73,6 +73,18 @@ namespace scripting
 		{
 			return {this->id_, this->get_value_id(key)};
 		}
+
+		array_value operator[](const array_key& key) const
+		{
+			if (key.is_integer)
+			{
+				return {this->id_, this->get_value_id(key.index)};
+			}
+			else
+			{
+				return {this->id_, this->get_value_id(key.key)};
+			}
+		}
 	private:
 		unsigned int id_;
 	};
