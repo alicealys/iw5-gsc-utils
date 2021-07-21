@@ -38,9 +38,6 @@ namespace scripting
 		array& operator=(const array& other);
 		array& operator=(array&& other) noexcept;
 
-		void add() const;
-		void release() const;
-
 		std::vector<array_key> get_keys() const;
 		unsigned int size() const;
 
@@ -85,7 +82,11 @@ namespace scripting
 				return {this->id_, this->get_value_id(key.key)};
 			}
 		}
+
 	private:
+		void add() const;
+		void release() const;
+
 		unsigned int id_;
 	};
 }
