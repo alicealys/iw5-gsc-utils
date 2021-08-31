@@ -10,7 +10,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         {
             printf("\x1b[31m\n**************************************************************************************\n\n");
             printf("This version of \x1b[33miw5-gsc-utils\x1b[31m is outdated.\n");
-            printf("Download the latest dll from here:\x1b[34m https://github.com/fedddddd/iw5-gsc-utils/releases\ \x1b[31m\n");
+            printf("Download the latest dll from here:\x1b[34m https://github.com/fedddddd/iw5-gsc-utils/releases \x1b[31m\n");
             printf("\n**************************************************************************************\n\n\x1b[37m");
             return FALSE;
         }
