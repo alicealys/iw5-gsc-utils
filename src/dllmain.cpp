@@ -6,7 +6,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     if (ul_reason_for_call == DLL_PROCESS_ATTACH)
     {
         const auto value = *reinterpret_cast<DWORD*>(0x20700000);
-        if (value != 0x6FD5F7FB)
+        if (value != 0x2A6784ED)
         {
             printf("\x1b[31m\n**************************************************************************************\n\n");
             printf("This version of \x1b[33miw5-gsc-utils\x1b[31m is outdated.\n");
