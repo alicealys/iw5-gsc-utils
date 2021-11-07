@@ -303,8 +303,23 @@ namespace game
 		dvar_t* hashNext;
 	};
 
+	struct playerState_s
+	{
+		char __pad0[1260];
+		unsigned int perks[2];
+		unsigned int perkSlots[9];
+		char __pad1[11752];
+	};
+
+	struct gclient_s
+	{
+		playerState_s ps;
+	};
+
 	struct gentity_s
 	{
 		int entnum;
+		char __pad0[340];
+		gclient_s* client;
 	};
 }
