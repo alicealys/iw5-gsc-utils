@@ -59,15 +59,15 @@ namespace scripting
 
 		script_function get_function_by_index(const unsigned index)
 		{
-			static const auto function_table = 0x1D6EB34;
-			static const auto method_table = 0x1D4F258;
+			static const auto function_table = 0x20689DD8;
+			static const auto method_table = 0x2068A5A8;
 
 			if (index < 0x1C7)
 			{
 				return reinterpret_cast<script_function*>(function_table)[index];
 			}
 
-			return reinterpret_cast<script_function*>(method_table)[index];
+			return reinterpret_cast<script_function*>(method_table)[index - 0x8000];
 		}
 	}
 

@@ -77,7 +77,6 @@ namespace scripting
 		{
 			userinfo::clear_overrides();
 			command::clear_script_commands();
-			gsc::replaced_functions.clear();
 			g_shutdown_game_hook.invoke<void>(free_scripts);
 		}
 
