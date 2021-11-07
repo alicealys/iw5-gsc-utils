@@ -305,21 +305,26 @@ namespace game
 
 	struct playerState_s
 	{
-		char __pad0[1260];
-		unsigned int perks[2];
-		unsigned int perkSlots[9];
-		char __pad1[11752];
+		char __pad0[0x4EC];
+		unsigned int perks[0x2];
+		unsigned int perkSlots[0x9];
+		char __pad1[0x2DE8];
 	};
 
 	struct gclient_s
 	{
 		playerState_s ps;
+		char __pad0[0x2ED];
+		int flags;
 	};
 
 	struct gentity_s
 	{
 		int entnum;
-		char __pad0[340];
+		char __pad0[0x154];
 		gclient_s* client;
+		char __pad1[0x28];
+		int flags;
+		char __pad2[0xEC];
 	};
 }
