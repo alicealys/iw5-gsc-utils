@@ -74,7 +74,7 @@ namespace game
 
 	WEAK symbol<scr_classStruct_t*> g_classMap{0x8B4300};
 
-	WEAK symbol<gentity_s> g_entities{0x0};
+	WEAK symbol<gentity_s> g_entities{0x1A66E28};
 	WEAK symbol<unsigned int> levelEntityId{0x208E1A4};
 
 	namespace plutonium
