@@ -14,8 +14,6 @@
 
 namespace gsc
 {
-	std::unordered_map<const char*, const char*> replaced_functions;
-
 	function_args::function_args(std::vector<scripting::script_value> values)
 		: values_(values)
 	{
@@ -109,7 +107,7 @@ namespace gsc
 		{
 			if (id < 0x200)
 			{
-				return reinterpret_cast<builtin_function*>(0x1D6EB34)[id]();
+				return reinterpret_cast<builtin_function*>(0x20689DD8)[id]();
 			}
 
 			try
@@ -135,7 +133,7 @@ namespace gsc
 		{
 			if (id < 0x8400)
 			{
-				return reinterpret_cast<builtin_method*>(0x1D4F258)[id](ent);
+				return reinterpret_cast<builtin_method*>(0x2068A5A8)[id - 0x8000](ent);
 			}
 
 			try
@@ -201,62 +199,6 @@ namespace gsc
 				retn
 			}
 		}
-
-		const char* replaced_pos = 0;
-
-		void get_replaced_pos(const char* pos)
-		{
-			if (replaced_functions.find(pos) != replaced_functions.end())
-			{
-				replaced_pos = replaced_functions[pos];
-			}
-		}
-
-		__declspec(naked) void vm_execute_stub()
-		{
-			__asm
-			{
-				pushad
-				push esi
-				call get_replaced_pos
-				pop esi
-				popad
-
-				cmp replaced_pos, 0
-				jne set_pos
-
-				movzx eax, byte ptr[esi]
-				inc esi
-
-				jmp loc_1
-			loc_1:
-				mov [ebp - 0x18], eax
-				mov [ebp - 0x8], esi
-
-				push ecx
-
-				mov ecx, 0x20B8E28
-				mov [ecx], eax
-
-				mov ecx, 0x20B4A5C
-				mov[ecx], esi
-
-				pop ecx
-
-				cmp eax, 0x98
-
-				push 0x56B740
-				retn
-			set_pos:
-				mov esi, replaced_pos
-				mov replaced_pos, 0
-
-				movzx eax, byte ptr[esi]
-				inc esi
-
-				jmp loc_1
-			}
-		}
 	}
 
 	namespace function
@@ -289,16 +231,6 @@ namespace gsc
 			function::add("executecommand", [](const function_args& args) -> scripting::script_value
 			{
 				game::Cbuf_AddText(0, args[0].as<const char*>());
-				return {};
-			});
-
-			function::add("replacefunc", [](const function_args& args) -> scripting::script_value
-			{
-				const auto what = args[0].as<scripting::function>();
-				const auto with = args[1].as<scripting::function>();
-
-				replaced_functions[what.get_pos()] = with.get_pos();
-
 				return {};
 			});
 
@@ -360,11 +292,12 @@ namespace gsc
 				playerState->perks[0] = toggle
 					? flags | 0x4000u
 					: flags & ~0x4000u;
+
+				return {};
 			});
 
 			utils::hook::jump(0x56C8EB, call_builtin_stub);
 			utils::hook::jump(0x56CBDC, call_builtin_method_stub);
-			utils::hook::jump(0x56B726, vm_execute_stub);
 		}
 	};
 }
