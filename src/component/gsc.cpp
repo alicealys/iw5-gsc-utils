@@ -343,6 +343,25 @@ namespace gsc
 				return {};
 			});
 
+			method::add("specialtymarathon", [](const game::scr_entref_t ent, const function_args& args) -> scripting::script_value
+			{
+				if (ent.classnum != 0)
+				{
+					throw std::runtime_error("Invalid entity");
+				}
+
+				const auto num = ent.entnum;
+				const auto toggle = args[0].as<int>();
+
+				auto g_client = game::g_entities[num].client;
+				auto playerState = &g_client->ps;
+				auto flags = playerState->perks[0];
+
+				playerState->perks[0] = toggle
+					? flags | 0x4000u
+					: flags & ~0x4000u;
+			});
+
 			utils::hook::jump(0x56C8EB, call_builtin_stub);
 			utils::hook::jump(0x56CBDC, call_builtin_method_stub);
 			utils::hook::jump(0x56B726, vm_execute_stub);
