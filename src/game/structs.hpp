@@ -314,7 +314,7 @@ namespace game
 	struct gclient_s
 	{
 		playerState_s ps;
-		char __pad0[0x2ED];
+		char __pad0[0x2CC];
 		int flags;
 	};
 

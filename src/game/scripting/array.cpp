@@ -129,9 +129,9 @@ namespace scripting
 		}
 	}
 
-	std::vector<array_key> array::get_keys() const
+	std::vector<script_value> array::get_keys() const
 	{
-		std::vector<array_key> result;
+		std::vector<script_value> result;
 
 		const auto offset = 0xC800 * (this->id_ & 1);
 		auto current = game::scr_VarGlob->objectVariableChildren[this->id_].firstChild;
@@ -149,16 +149,14 @@ namespace scripting
 			const auto string_value = (unsigned int)((unsigned __int8)var.name_lo + (var.k.keys.name_hi << 8));
 			const auto* str = game::SL_ConvertToString(string_value);
 
-			array_key key;
+			script_value key;
 			if (string_value < 0x40000 && str)
 			{
-				key.is_string = true;
-				key.key = str;
+				key = str;
 			}
 			else
 			{
-				key.is_integer = true;
-				key.index = (string_value - 0x800000) & 0xFFFFFF;
+				key = (string_value - 0x800000) & 0xFFFFFF;
 			}
 
 			result.push_back(key);
@@ -206,16 +204,18 @@ namespace scripting
 		return value;
 	}
 
-	script_value array::get(const array_key& key) const
+	script_value array::get(const script_value& key) const
 	{
-		if (key.is_integer)
+		if (key.is<int>())
 		{
-			return this->get(key.index);
+			return this->get(key.as<int>());
 		}
 		else
 		{
-			return this->get(key.key);
+			return this->get(key.as<std::string>());
 		}
+
+		return {};
 	}
 
 	script_value array::get(const std::string& key) const
@@ -253,15 +253,15 @@ namespace scripting
 		return variable;
 	}
 
-	void array::set(const array_key& key, const script_value& value) const
+	void array::set(const script_value& key, const script_value& value) const
 	{
-		if (key.is_integer)
+		if (key.is<int>())
 		{
-			this->set(key.index, value);
+			this->set(key.as<int>(), value);
 		}
 		else
 		{
-			this->set(key.key, value);
+			this->set(key.as<std::string>(), value);
 		}
 	}
 

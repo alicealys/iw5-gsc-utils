@@ -49,8 +49,10 @@ namespace game
 	WEAK symbol<unsigned int(unsigned int threadId)> Scr_GetSelf{0x5655E0};
 	WEAK symbol<void()> Scr_MakeArray{0x56ADE0};
 	WEAK symbol<void(unsigned int stringValue)> Scr_AddArrayStringIndexed{0x56AE70};
+	WEAK symbol<void(unsigned int classnum, unsigned int name, unsigned int canonicalString, unsigned int offset)> Scr_AddClassField{0x567CD0};
 
 	WEAK symbol<unsigned int(const char* str, unsigned int user)> SL_GetString{0x5649E0};
+	WEAK symbol<unsigned int(const char* str)> SL_GetCanonicalString{0x5619A0};
 	WEAK symbol<const char*(unsigned int stringValue)> SL_ConvertToString{0x564270};
 
 	WEAK symbol<void(int clientNum, int type, const char* command)> SV_GameSendServerCommand{0x573220};
@@ -81,5 +83,6 @@ namespace game
 	{
 		WEAK symbol<std::unordered_map<std::string, std::uint16_t>> function_map_rev{0x20691228};
 		WEAK symbol<std::unordered_map<std::string, std::uint16_t>> method_map_rev{0x20691248};
+		WEAK symbol<std::unordered_map<std::string, std::uint16_t>> token_map_rev{0x20691288};
 	}
 }

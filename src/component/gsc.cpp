@@ -102,6 +102,18 @@ namespace gsc
 
 		auto function_map_start = 0x200;
 		auto method_map_start = 0x8400;
+		auto token_map_start = 0x8000;
+		auto field_offset_start = 0xA000;
+
+		struct field
+		{
+			std::string name;
+			std::function<scripting::script_value(unsigned int entnum)> getter;
+			std::function<void(unsigned int entnum, scripting::script_value)> setter;
+		};
+
+		std::vector<std::function<void()>> post_load_callbacks;
+		std::unordered_map<unsigned int, std::unordered_map<unsigned int, field>> custom_fields;
 
 		void call_function(unsigned int id)
 		{
@@ -199,6 +211,65 @@ namespace gsc
 				retn
 			}
 		}
+
+		utils::hook::detour scr_get_object_field_hook;
+		void scr_get_object_field_stub(unsigned int classnum, int entnum, unsigned int offset)
+		{
+			if (custom_fields[classnum].find(offset) == custom_fields[classnum].end())
+			{
+				return scr_get_object_field_hook.invoke<void>(classnum, entnum, offset);
+			}
+
+			const auto field = custom_fields[classnum][offset];
+
+			try
+			{
+				const auto result = field.getter(entnum);
+				return_value(result);
+			}
+			catch (const std::exception& e)
+			{
+				printf("************** Script execution error **************\n");
+				printf("Error getting field %s\n", field.name.data());
+				printf("%s\n", e.what());
+				printf("****************************************************\n");
+			}
+		}
+
+		utils::hook::detour scr_set_object_field_hook;
+		void scr_set_object_field_stub(unsigned int classnum, int entnum, unsigned int offset)
+		{
+			if (custom_fields[classnum].find(offset) == custom_fields[classnum].end())
+			{
+				return scr_set_object_field_hook.invoke<void>(classnum, entnum, offset);
+			}
+
+			const auto args = get_arguments();
+			const auto field = custom_fields[classnum][offset];
+
+			try
+			{
+				field.setter(entnum, args[0]);
+			}
+			catch (const std::exception& e)
+			{
+				printf("************** Script execution error **************\n");
+				printf("Error setting field %s\n", field.name.data());
+				printf("%s\n", e.what());
+				printf("****************************************************\n");
+			}
+		}
+
+		utils::hook::detour scr_post_load_scripts_hook;
+		void scr_post_load_scripts_stub()
+		{
+			for (const auto& callback : post_load_callbacks)
+			{
+				callback();
+			}
+
+			return scr_post_load_scripts_hook.invoke<void>();
+		}
 	}
 
 	namespace function
@@ -223,11 +294,61 @@ namespace gsc
 		}
 	}
 
+	namespace field
+	{
+		void add(classid classnum, const std::string& name,
+			const std::function<scripting::script_value(unsigned int entnum)>& getter,
+			const std::function<void(unsigned int entnum, const scripting::script_value&)>& setter)
+		{
+			const auto token_id = token_map_start++;
+			const auto offset = field_offset_start++;
+
+			custom_fields[classnum][offset] = {name, getter, setter};
+			(*game::plutonium::token_map_rev)[name] = token_id;
+
+			post_load_callbacks.push_back([classnum, name, token_id, offset]()
+			{
+				const auto name_str = game::SL_GetString(name.data(), 0);
+				game::Scr_AddClassField(classnum, name_str, token_id, offset);
+			});
+		}
+	}
+
 	class component final : public component_interface
 	{
 	public:
 		void post_unpack() override
 		{
+			scr_get_object_field_hook.create(0x52BDB0, scr_get_object_field_stub);
+			scr_set_object_field_hook.create(0x52BCC0, scr_set_object_field_stub);
+			scr_post_load_scripts_hook.create(0x628B50, scr_post_load_scripts_stub);
+
+			gsc::field::add(classid::entity, "flags",
+				[](unsigned int entnum) -> scripting::script_value
+				{
+					const auto entity = &game::g_entities[entnum];
+					return entity->flags;
+				},
+				[](unsigned int entnum, const scripting::script_value& value)
+				{
+					const auto entity = &game::g_entities[entnum];
+					entity->flags = value.as<int>();
+				}
+			);
+
+			gsc::field::add(classid::entity, "clientflags",
+				[](unsigned int entnum) -> scripting::script_value
+				{
+					const auto entity = &game::g_entities[entnum];
+					return entity->client->flags;
+				},
+				[](unsigned int entnum, const scripting::script_value& value)
+				{
+					const auto entity = &game::g_entities[entnum];
+					entity->client->flags = value.as<int>();
+				}
+			);
+
 			function::add("executecommand", [](const function_args& args) -> scripting::script_value
 			{
 				game::Cbuf_AddText(0, args[0].as<const char*>());

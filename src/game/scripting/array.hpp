@@ -3,14 +3,6 @@
 
 namespace scripting
 {
-	struct array_key
-	{
-		bool is_string = false;
-		bool is_integer = false;
-		unsigned int index{};
-		std::string key{};
-	};
-
 	class array_value : public script_value
 	{
 	public:
@@ -38,7 +30,7 @@ namespace scripting
 		array& operator=(const array& other);
 		array& operator=(array&& other) noexcept;
 
-		std::vector<array_key> get_keys() const;
+		std::vector<script_value> get_keys() const;
 		unsigned int size() const;
 
 		unsigned int push(script_value) const;
@@ -46,11 +38,11 @@ namespace scripting
 		void erase(const std::string&) const;
 		script_value pop() const;
 
-		script_value get(const array_key&) const;
+		script_value get(const script_value&) const;
 		script_value get(const std::string&) const;
 		script_value get(const unsigned int) const;
 
-		void set(const array_key&, const script_value&) const;
+		void set(const script_value&, const script_value&) const;
 		void set(const std::string&, const script_value&) const;
 		void set(const unsigned int, const script_value&) const;
 
@@ -71,15 +63,17 @@ namespace scripting
 			return {this->id_, this->get_value_id(key)};
 		}
 
-		array_value operator[](const array_key& key) const
+		template <typename I = int, typename S = std::string>
+		array_value operator[](const script_value& key) const
 		{
-			if (key.is_integer)
+			if (key.is<I>())
 			{
-				return {this->id_, this->get_value_id(key.index)};
+				return { this->id_, this->get_value_id(key.as<I>()) };
 			}
-			else
+
+			if (key.is<S>())
 			{
-				return {this->id_, this->get_value_id(key.key)};
+				return { this->id_, this->get_value_id(key.as<S>()) };
 			}
 		}
 
