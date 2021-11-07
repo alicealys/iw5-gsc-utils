@@ -343,7 +343,7 @@ namespace gsc
 				return {};
 			});
 
-			method::add("specialtymarathon", [](const game::scr_entref_t ent, const function_args& args)->scripting::script_value
+			method::add("specialtymarathon", [](const game::scr_entref_t ent, const function_args& args) -> scripting::script_value
 			{
 				if (ent.classnum != 0)
 				{
