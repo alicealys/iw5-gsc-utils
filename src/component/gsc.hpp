@@ -2,6 +2,15 @@
 
 namespace gsc
 {
+	enum classid
+	{
+		entity,
+		hudelem,
+		pathnode,
+		node,
+		count
+	};
+
 	class function_args
 	{
 	public:
@@ -33,5 +42,12 @@ namespace gsc
 	namespace method
 	{
 		void add(const std::string& name, const script_method& func);
+	}
+
+	namespace field
+	{
+		void add(classid classnum, const std::string& name,
+			const std::function<scripting::script_value(unsigned int entnum)>& getter,
+			const std::function<void(unsigned int entnum, const scripting::script_value&)>& setter);
 	}
 }

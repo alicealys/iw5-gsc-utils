@@ -28,18 +28,23 @@ namespace json
 			const auto keys = array.get_keys();
 			for (auto i = 0; i < keys.size(); i++)
 			{
+				const auto is_int = keys[i].is<int>();
+				const auto is_string = keys[i].is<std::string>();
+
 				if (string_indexed == -1)
 				{
-					string_indexed = keys[i].is_string;
+					string_indexed = is_string;
 				}
 
-				if (!string_indexed && keys[i].is_integer)
+				if (!string_indexed && is_int)
 				{
-					obj[keys[i].index] = gsc_to_json(array[keys[i].index]);
+					const auto index = keys[i].as<int>();
+					obj[index] = gsc_to_json(array[index]);
 				}
-				else if (string_indexed && keys[i].is_string)
+				else if (string_indexed && is_string)
 				{
-					obj.emplace(keys[i].key, gsc_to_json(array[keys[i].key]));
+					const auto key = keys[i].as<std::string>();
+					obj.emplace(key, gsc_to_json(array[key]));
 				}
 			}
 
