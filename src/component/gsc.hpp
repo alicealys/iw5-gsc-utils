@@ -18,9 +18,9 @@ namespace gsc
 
 		unsigned int size() const;
 		std::vector<scripting::script_value> get_raw() const;
-		scripting::script_value get(const int index) const;
+		scripting::value_wrap get(const int index) const;
 
-		scripting::script_value operator[](const int index) const
+		scripting::value_wrap operator[](const int index) const
 		{
 			return this->get(index);
 		}
