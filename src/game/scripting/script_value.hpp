@@ -82,6 +82,11 @@ namespace scripting
 				return "array";
 			}
 
+			if (info == typeid(function))
+			{
+				return "function";
+			}
+
 			if (info == typeid(vector))
 			{
 				return "vector";
