@@ -23,7 +23,7 @@ namespace scripting
 		return this->pos_;
 	}
 
-	script_value function::call(entity self, std::vector<script_value> arguments) const
+	script_value function::call(const entity& self, std::vector<script_value> arguments) const
 	{
 		return exec_ent_thread(self, this->pos_, arguments);
 	}

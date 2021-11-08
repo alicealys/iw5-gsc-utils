@@ -1,5 +1,6 @@
 #include <stdinc.hpp>
 #include "array.hpp"
+#include "script_value.hpp"
 #include "execution.hpp"
 
 namespace scripting

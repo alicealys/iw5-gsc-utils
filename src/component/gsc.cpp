@@ -14,32 +14,6 @@
 
 namespace gsc
 {
-	function_args::function_args(std::vector<scripting::script_value> values)
-		: values_(values)
-	{
-	}
-
-	unsigned int function_args::size() const
-	{
-		return this->values_.size();
-	}
-
-	std::vector<scripting::script_value> function_args::get_raw() const
-	{
-		return this->values_;
-	}
-
-	scripting::script_value function_args::get(const int index) const
-	{
-		if (index >= this->values_.size())
-		{
-			throw std::runtime_error(utils::string::va("Insufficient arguments, got %i expected %i", 
-				this->values_.size(), index + 1));
-		}
-		
-		return this->values_[index];
-	}
-
 	std::unordered_map<unsigned, script_function> functions;
 	std::unordered_map<unsigned, script_method> methods;
 
@@ -105,7 +79,7 @@ namespace gsc
 		auto token_map_start = 0x8000;
 		auto field_offset_start = 0xA000;
 
-		struct field
+		struct entity_field
 		{
 			std::string name;
 			std::function<scripting::script_value(unsigned int entnum)> getter;
@@ -113,7 +87,7 @@ namespace gsc
 		};
 
 		std::vector<std::function<void()>> post_load_callbacks;
-		std::unordered_map<unsigned int, std::unordered_map<unsigned int, field>> custom_fields;
+		std::unordered_map<unsigned int, std::unordered_map<unsigned int, entity_field>> custom_fields;
 
 		void call_function(unsigned int id)
 		{
@@ -135,8 +109,8 @@ namespace gsc
 			catch (const std::exception& e)
 			{
 				printf("************** Script execution error **************\n");
-				printf("Error executing function %s\n", function_name(id).data());
-				printf("%s\n", e.what());
+				printf("Error executing function %s:\n", function_name(id).data());
+				printf("    %s\n", e.what());
 				printf("****************************************************\n");
 			}
 		}
@@ -161,8 +135,8 @@ namespace gsc
 			catch (const std::exception& e)
 			{
 				printf("************** Script execution error **************\n");
-				printf("Error executing method %s\n", method_name(id).data());
-				printf("%s\n", e.what());
+				printf("Error executing method %s:\n", method_name(id).data());
+				printf("    %s\n", e.what());
 				printf("****************************************************\n");
 			}
 		}
@@ -230,8 +204,8 @@ namespace gsc
 			catch (const std::exception& e)
 			{
 				printf("************** Script execution error **************\n");
-				printf("Error getting field %s\n", field.name.data());
-				printf("%s\n", e.what());
+				printf("Error getting field %s:\n", field.name.data());
+				printf("    %s\n", e.what());
 				printf("****************************************************\n");
 			}
 		}
@@ -254,8 +228,8 @@ namespace gsc
 			catch (const std::exception& e)
 			{
 				printf("************** Script execution error **************\n");
-				printf("Error setting field %s\n", field.name.data());
-				printf("%s\n", e.what());
+				printf("Error setting field %s:\n", field.name.data());
+				printf("    %s\n", e.what());
 				printf("****************************************************\n");
 			}
 		}
@@ -314,6 +288,31 @@ namespace gsc
 		}
 	}
 
+	function_args::function_args(std::vector<scripting::script_value> values)
+		: values_(values)
+	{
+	}
+
+	unsigned int function_args::size() const
+	{
+		return this->values_.size();
+	}
+
+	std::vector<scripting::script_value> function_args::get_raw() const
+	{
+		return this->values_;
+	}
+
+	scripting::value_wrap function_args::get(const int index) const
+	{
+		if (index >= this->values_.size())
+		{
+			throw std::runtime_error(utils::string::va("parameter %d does not exist", index));
+		}
+
+		return {this->values_[index], index};
+	}
+
 	class component final : public component_interface
 	{
 	public:
@@ -323,7 +322,7 @@ namespace gsc
 			scr_set_object_field_hook.create(0x52BCC0, scr_set_object_field_stub);
 			scr_post_load_scripts_hook.create(0x628B50, scr_post_load_scripts_stub);
 
-			gsc::field::add(classid::entity, "flags",
+			field::add(classid::entity, "flags",
 				[](unsigned int entnum) -> scripting::script_value
 				{
 					const auto entity = &game::g_entities[entnum];
@@ -336,7 +335,7 @@ namespace gsc
 				}
 			);
 
-			gsc::field::add(classid::entity, "clientflags",
+			field::add(classid::entity, "clientflags",
 				[](unsigned int entnum) -> scripting::script_value
 				{
 					const auto entity = &game::g_entities[entnum];
