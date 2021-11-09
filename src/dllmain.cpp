@@ -6,15 +6,17 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     if (ul_reason_for_call == DLL_PROCESS_ATTACH)
     {
         const auto value = *reinterpret_cast<DWORD*>(0x20800000);
-        if (value != 0xB9C9566)
+        if (value != 0x2A6784ED)
         {
-            printf("\x1b[31m\n**************************************************************************************\n\n");
-            printf("This version of \x1b[33miw5-gsc-utils\x1b[31m is outdated.\n");
-            printf("Download the latest dll from here:\x1b[34m https://github.com/fedddddd/iw5-gsc-utils/releases \x1b[31m\n");
-            printf("\n**************************************************************************************\n\n\x1b[37m");
+            MessageBoxA(NULL,
+                "This version of iw5-gsc-utils is outdated.\n" \
+                "Download the latest dll from here: https://github.com/fedddddd/iw5-gsc-utils/releases" \
+            , "ERROR", MB_ICONERROR);
+
             return FALSE;
         }
 
+        utils::hook::jump(reinterpret_cast<uintptr_t>(&printf), game::plutonium::printf);
         component_loader::post_unpack();
     }
 
