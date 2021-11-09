@@ -93,7 +93,7 @@ namespace gsc
 		{
 			if (id < 0x200)
 			{
-				return reinterpret_cast<builtin_function*>(0x20689DD8)[id]();
+				return reinterpret_cast<builtin_function*>(game::plutonium::function_table.get())[id]();
 			}
 
 			try
@@ -119,7 +119,7 @@ namespace gsc
 		{
 			if (id < 0x8400)
 			{
-				return reinterpret_cast<builtin_method*>(0x2068A5A8)[id - 0x8000](ent);
+				return reinterpret_cast<builtin_method*>(game::plutonium::method_table.get())[id - 0x8000](ent);
 			}
 
 			try

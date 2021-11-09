@@ -59,8 +59,8 @@ namespace scripting
 
 		script_function get_function_by_index(const unsigned index)
 		{
-			static const auto function_table = 0x20689DD8;
-			static const auto method_table = 0x2068A5A8;
+			static const auto function_table = game::plutonium::function_table.get();
+			static const auto method_table = game::plutonium::method_table.get();
 
 			if (index < 0x1C7)
 			{
