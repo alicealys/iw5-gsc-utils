@@ -46,7 +46,7 @@ namespace gsc
 
 	namespace field
 	{
-		void add(classid classnum, const std::string& name,
+		void add(const classid classnum, const std::string& name,
 			const std::function<scripting::script_value(unsigned int entnum)>& getter,
 			const std::function<void(unsigned int entnum, const scripting::script_value&)>& setter);
 	}
