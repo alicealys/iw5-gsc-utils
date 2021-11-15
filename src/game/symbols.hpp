@@ -62,7 +62,7 @@ namespace game
 	WEAK symbol<unsigned int(unsigned int localId, const char* pos, unsigned int paramcount)> VM_Execute{0x56DFE0};
 
 	WEAK symbol<void* (jmp_buf* Buf, int Value)> longjmp{0x7363BC};
-	WEAK symbol<int(jmp_buf* Buf)> _setjmp{0x734CF8};
+	WEAK symbol<int(jmp_buf* Buf, int a2, int a3, int a4)> _setjmp{0x734CF8};
 
 	// Variables
 

@@ -109,8 +109,6 @@ namespace userinfo
 
 			gsc::method::add("resetname", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
 			{
-				const auto name = args[0].as<std::string>();
-
 				if (ent.classnum != 0 || ent.entnum > 17)
 				{
 					throw std::runtime_error("Invalid entity");
@@ -141,8 +139,6 @@ namespace userinfo
 
 			gsc::method::add("resetclantag", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
 			{
-				const auto name = args[0].as<std::string>();
-
 				if (ent.classnum != 0 || ent.entnum > 17)
 				{
 					throw std::runtime_error("Invalid entity");
