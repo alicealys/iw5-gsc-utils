@@ -1,4 +1,6 @@
 #pragma once
+#include "game/scripting/array.hpp"
+#include "game/scripting/execution.hpp"
 
 namespace gsc
 {
