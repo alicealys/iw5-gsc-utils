@@ -2,12 +2,6 @@
 #include "loader/component_loader.hpp"
 
 #include "scheduler.hpp"
-
-#include "game/scripting/event.hpp"
-#include "game/scripting/execution.hpp"
-#include "game/scripting/functions.hpp"
-#include "game/scripting/array.hpp"
-
 #include "gsc.hpp"
 
 namespace userinfo

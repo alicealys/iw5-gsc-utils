@@ -29,6 +29,8 @@ namespace scripting
 
 		std::string current_file;
 
+		std::vector<std::function<void()>> shutdown_callbacks;
+
 		void vm_notify_stub(const unsigned int notify_list_owner_id, const unsigned int string_value,
 			                game::VariableValue* top)
 		{
@@ -77,6 +79,13 @@ namespace scripting
 		{
 			userinfo::clear_overrides();
 			command::clear_script_commands();
+
+			for (const auto& callback : shutdown_callbacks)
+			{
+				callback();
+			}
+
+			shutdown_callbacks = {};
 			g_shutdown_game_hook.invoke<void>(free_scripts);
 		}
 
@@ -104,6 +113,11 @@ namespace scripting
 
 			scr_set_thread_position_hook.invoke<void>(threadName, codePos);
 		}
+	}
+
+	void on_shutdown(const std::function<void()>& callback)
+	{
+		shutdown_callbacks.push_back(callback);
 	}
 
 	class component final : public component_interface
