@@ -60,13 +60,11 @@ namespace scripting
 	array::array()
 	{
 		this->id_ = make_array();
-		this->add();
 	}
 	
 	array::array(std::vector<script_value> values)
 	{
 		this->id_ = make_array();
-		this->add();
 
 		for (const auto& value : values)
 		{
@@ -77,7 +75,6 @@ namespace scripting
 	array::array(std::unordered_map<std::string, script_value> values)
 	{
 		this->id_ = make_array();
-		this->add();
 
 		for (const auto& value : values)
 		{
