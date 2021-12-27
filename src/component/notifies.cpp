@@ -29,7 +29,7 @@ namespace notifies
 					const auto entity_id = game::Scr_GetEntityId(clientNum, 0);
 					const auto result = callback(entity_id, {message, cmd == "say_team"s});
 
-					if (result.is<int>())
+					if (result.is<int>() && !hidden)
 					{
 						hidden = result.as<int>() == 0;
 					}
