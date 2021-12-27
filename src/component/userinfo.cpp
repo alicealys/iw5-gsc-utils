@@ -13,12 +13,17 @@ namespace userinfo
 	{
 		utils::hook::detour sv_getuserinfo_hook;
 
-		userinfo_map userinfo_to_map(const std::string& userinfo)
+		userinfo_map userinfo_to_map(std::string userinfo)
 		{
-			userinfo_map map;
-			const auto args = utils::string::split(userinfo, '\\');
+			userinfo_map map{};
 
-			for (auto i = 1; i < args.size() - 1; i += 2)
+			if (userinfo[0] == '\\')
+			{
+				userinfo = userinfo.substr(1);
+			}
+
+			const auto args = utils::string::split(userinfo, '\\');
+			for (size_t i = 0; !args.empty() && i < (args.size() - 1); i += 2)
 			{
 				map[args[i]] = args[i + 1];
 			}
@@ -28,7 +33,7 @@ namespace userinfo
 
 		std::string map_to_userinfo(const userinfo_map& map)
 		{
-			std::string buffer;
+			std::string buffer{};
 
 			for (const auto& value : map)
 			{
@@ -43,9 +48,8 @@ namespace userinfo
 
 		void sv_getuserinfo_stub(int index, char* buffer, int bufferSize)
 		{
-			char _buffer[1024];
-			sv_getuserinfo_hook.invoke<void>(index, _buffer, 1024);
-			auto map = userinfo_to_map(_buffer);
+			sv_getuserinfo_hook.invoke<void>(index, buffer, bufferSize);
+			auto map = userinfo_to_map(buffer);
 
 			if (userinfo_overrides.find(index) == userinfo_overrides.end())
 			{
