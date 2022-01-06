@@ -416,6 +416,22 @@ namespace gsc
 				return {};
 			});
 
+			method::add("isbot", [](const game::scr_entref_t ent, const function_args& args) -> scripting::script_value
+			{
+				if (ent.classnum != 0)
+				{
+					throw std::runtime_error("Invalid entity");
+				}
+
+				const auto client = ent.entnum;
+				if (game::g_entities[client].client == nullptr)
+				{
+					throw std::runtime_error("entity is not a player");
+				}
+
+				return game::svs_clients[client].bIsTestClient;
+			});
+
 			utils::hook::jump(0x56C8EB, call_builtin_stub);
 			utils::hook::jump(0x56CBDC, call_builtin_method_stub);
 		}

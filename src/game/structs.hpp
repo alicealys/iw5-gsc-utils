@@ -327,4 +327,15 @@ namespace game
 		int flags;
 		char __pad2[0xEC];
 	};
+
+	struct client_s
+	{
+		char __pad0[0x41CB2];
+		unsigned __int16 scriptId; // 269490
+		int bIsTestClient; // 269492
+		int serverId; // 269496
+		char __pad1[0x369DC];
+	};
+
+	static_assert(sizeof(client_s) == 0x78698);
 }

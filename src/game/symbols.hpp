@@ -79,6 +79,8 @@ namespace game
 	WEAK symbol<gentity_s> g_entities{0x1A66E28};
 	WEAK symbol<unsigned int> levelEntityId{0x208E1A4};
 
+	WEAK symbol<client_s> svs_clients{0x4B5CF90};
+
 	namespace plutonium
 	{
 		WEAK symbol<std::unordered_map<std::string, std::uint16_t>> function_map_rev{0x20693038};
