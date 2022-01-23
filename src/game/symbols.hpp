@@ -83,11 +83,11 @@ namespace game
 
 	namespace plutonium
 	{
-		WEAK symbol<std::unordered_map<std::string, std::uint16_t>> function_map_rev{0x20693038};
-		WEAK symbol<std::unordered_map<std::string, std::uint16_t>> method_map_rev{0x20693058};
-		WEAK symbol<std::unordered_map<std::string, std::uint16_t>> token_map_rev{0x20693098};
-		WEAK symbol<int(const char* fmt, ...)> printf{0x208879B0};
-		WEAK symbol<void*> function_table{0x2068BCF0};
-		WEAK symbol<void*> method_table{0x2068C4C0};
+		WEAK symbol<std::unordered_map<std::string, std::uint16_t>> function_map_rev{0x206964D0};
+		WEAK symbol<std::unordered_map<std::string, std::uint16_t>> method_map_rev{0x206964F0};
+		WEAK symbol<std::unordered_map<std::string, std::uint16_t>> token_map_rev{0x20696530};
+		WEAK symbol<int(const char* fmt, ...)> printf{0x20887840};
+		WEAK symbol<void*> function_table{0x2068F210};
+		WEAK symbol<void*> method_table{0x2068F9E0};
 	}
 }

@@ -5,8 +5,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 {
     if (ul_reason_for_call == DLL_PROCESS_ATTACH)
     {
-        const auto value = *reinterpret_cast<DWORD*>(0x20900000);
-        if (value != 0xF0681B6A)
+        const auto value = *reinterpret_cast<DWORD*>(0x21000000);
+        if (value != 0x7AC6)
         {
             MessageBoxA(NULL,
                 "This version of iw5-gsc-utils is outdated.\n" \
