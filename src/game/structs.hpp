@@ -328,9 +328,94 @@ namespace game
 		char __pad2[0xEC];
 	};
 
+	enum netsrc_t
+	{
+		NS_CLIENT1 = 0x0,
+		NS_CLIENT2 = 0x1,
+		NS_CLIENT3 = 0x2,
+		NS_CLIENT4 = 0x3,
+		NS_MAXCLIENTS = 0x4,
+		NS_SERVER = 0x4,
+		NS_PACKET = 0x5,
+		NS_INVALID_NETSRC = 0x6
+	};
+
+	enum netadrtype_t
+	{
+		NA_BOT = 0x0,
+		NA_BAD = 0x1,
+		NA_LOOPBACK = 0x2,
+		NA_BROADCAST = 0x3,
+		NA_IP = 0x4
+	};
+
+	struct netadr_s
+	{
+		netadrtype_t type;
+		unsigned char ip[4];
+		unsigned __int16 port;
+		unsigned char ipx[10];
+		unsigned int addrHandleIndex;
+	};
+
+	static_assert(sizeof(netadr_s) == 24);
+
+	struct netchan_t
+	{
+		int outgoingSequence;
+		netsrc_t sock;
+		int dropped;
+		int incomingSequence;
+		netadr_s remoteAddress;
+		int qport;
+		int fragmentSequence;
+		int fragmentLength;
+		unsigned char* fragmentBuffer;
+		int fragmentBufferSize;
+		int unsentFragments;
+		int unsentFragmentStart;
+		int unsentLength;
+		unsigned char* unsentBuffer;
+		int unsentBufferSize;
+		unsigned char __pad0[0x5E0];
+	};
+
+	static_assert(sizeof(netchan_t) == 0x630);
+
+	enum clientState_t
+	{
+		CS_FREE = 0,
+		CS_ZOMBIE = 1,
+		CS_RECONNECTING = 2,
+		CS_CONNECTED = 3,
+		CS_CLIENTLOADING = 4,
+		CS_ACTIVE = 5
+	};
+
+	struct clientHeader_t
+	{
+		clientState_t state; // 0
+		int sendAsActive; // 4
+		int deltaMessage; // 8
+		int rateDealyed; // 12
+		int hasAckedBaselineData; // 16
+		int hugeSnapshotSent; // 20
+		netchan_t netchan; // 24
+		vec3_t predictedOrigin;
+		int predictedOriginServerTime;
+		int migrationState;
+		vec3_t predictedVehicleOrigin;
+		int predictedVehicleServerTime;
+	};
+
+	static_assert(sizeof(clientHeader_t) == 0x66C);
+
 	struct client_s
 	{
-		char __pad0[0x41CB2];
+		clientHeader_t header;
+		const char* dropReason;
+		char userinfo[1024];
+		char __pad0[0x41242];
 		unsigned __int16 scriptId; // 269490
 		int bIsTestClient; // 269492
 		int serverId; // 269496
