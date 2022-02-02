@@ -384,7 +384,7 @@ namespace gsc
 			{
 				for (auto i = 0; i < *game::svs_clientCount; i++)
 				{
-					if (game::svs_clients[i].header.state !=game::CS_FREE
+					if (game::svs_clients[i].header.state != game::CS_FREE
 						&& game::svs_clients[i].header.netchan.remoteAddress.type == game::NA_BOT)
 					{
 						game::SV_GameDropClient(i, "GAME_GET_TO_COVER");
