@@ -363,10 +363,10 @@ namespace game
 	struct netchan_t
 	{
 		int outgoingSequence;
-		netsrc_t sock; // 28
-		int dropped; // 32
-		int incomingSequence; // 36
-		netadr_s remoteAddress; // 40
+		netsrc_t sock;
+		int dropped;
+		int incomingSequence;
+		netadr_s remoteAddress;
 		int qport;
 		int fragmentSequence;
 		int fragmentLength;
