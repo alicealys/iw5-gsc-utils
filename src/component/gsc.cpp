@@ -380,6 +380,20 @@ namespace gsc
 				return {};
 			});
 
+			function::add("dropallbots", [](const function_args& args) -> scripting::script_value
+			{
+				for (auto i = 0; i < *game::svs_clientCount; i++)
+				{
+					if (game::svs_clients[i].header.state !=game::CS_FREE
+						&& game::svs_clients[i].header.netchan.remoteAddress.type == game::NA_BOT)
+					{
+						game::SV_GameDropClient(i, "GAME_GET_TO_COVER");
+					}
+				}
+
+				return {};
+			});
+
 			method::add("tell", [](const game::scr_entref_t ent, const function_args& args) -> scripting::script_value
 			{
 				if (ent.classnum != 0)
