@@ -49,6 +49,7 @@ namespace command
 			if (i > index) result.append(" ");
 			result.append(this->get(i));
 		}
+
 		return result;
 	}
 
@@ -96,7 +97,6 @@ namespace command
 	public:
 		void post_unpack() override
 		{
-
 		}
 	};
 }

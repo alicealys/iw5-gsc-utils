@@ -402,8 +402,13 @@ namespace gsc
 				}
 
 				const auto client = ent.entnum;
-				const auto message = args[0].as<std::string>();
 
+				if (game::g_entities[client].client == nullptr)
+				{
+					throw std::runtime_error("Not a player entity");
+				}
+
+				const auto message = args[0].as<std::string>();
 				game::SV_GameSendServerCommand(client, 0, utils::string::va("%c \"%s\"", 84, message.data()));
 
 				return {};
@@ -416,16 +421,18 @@ namespace gsc
 					throw std::runtime_error("Invalid entity");
 				}
 
-				const auto num = ent.entnum;
+				const auto client = ent.entnum;
+
+				if (game::g_entities[client].client == nullptr)
+				{
+					throw std::runtime_error("Not a player entity");
+				}
+
 				const auto toggle = args[0].as<int>();
+				auto flags = game::g_entities[client].client->ps.perks[0];
 
-				auto g_client = game::g_entities[num].client;
-				auto playerState = &g_client->ps;
-				auto flags = playerState->perks[0];
-
-				playerState->perks[0] = toggle
-					? flags | 0x4000u
-					: flags & ~0x4000u;
+				game::g_entities[client].client->ps.perks[0] = toggle
+					? flags | 0x4000u : flags & ~0x4000u;
 
 				return {};
 			});
@@ -438,9 +445,10 @@ namespace gsc
 				}
 
 				const auto client = ent.entnum;
+
 				if (game::g_entities[client].client == nullptr)
 				{
-					throw std::runtime_error("entity is not a player");
+					throw std::runtime_error("Not a player entity");
 				}
 
 				return game::svs_clients[client].bIsTestClient;

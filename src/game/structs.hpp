@@ -26,19 +26,34 @@ namespace game
 		const char** argv[8];
 	};
 
+	enum netsrc_t
+	{
+		NS_CLIENT1 = 0x0,
+		NS_CLIENT2 = 0x1,
+		NS_CLIENT3 = 0x2,
+		NS_CLIENT4 = 0x3,
+		NS_MAXCLIENTS = 0x4,
+		NS_SERVER = 0x4,
+		NS_PACKET = 0x5,
+		NS_INVALID_NETSRC = 0x6
+	};
+
 	struct msg_t
 	{
 		int overflowed;
 		int readOnly;
-		char* data;
-		char* splitData;
+		unsigned char* data;
+		unsigned char* splitData;
 		int maxsize;
 		int cursize;
 		int splitSize;
 		int readcount;
 		int bit;
 		int lastEntityRef;
+		netsrc_t targetLocalNetID;
 	};
+
+	static_assert(sizeof(msg_t) == 0x2C);
 
 	struct XZoneInfo
 	{
@@ -326,18 +341,6 @@ namespace game
 		char __pad1[0x28];
 		int flags;
 		char __pad2[0xEC];
-	};
-
-	enum netsrc_t
-	{
-		NS_CLIENT1 = 0x0,
-		NS_CLIENT2 = 0x1,
-		NS_CLIENT3 = 0x2,
-		NS_CLIENT4 = 0x3,
-		NS_MAXCLIENTS = 0x4,
-		NS_SERVER = 0x4,
-		NS_PACKET = 0x5,
-		NS_INVALID_NETSRC = 0x6
 	};
 
 	enum netadrtype_t
