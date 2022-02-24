@@ -14,7 +14,13 @@ namespace notifies
 
 		void client_command_stub(int clientNum)
 		{
-			char cmd[1024] = { 0 };
+			char cmd[1024] = {0};
+			const auto* entity = &game::g_entities[clientNum];
+
+			if (entity->client == nullptr)
+			{
+				return; // Client is not fully in game yet
+			}
 
 			game::SV_Cmd_ArgvBuffer(0, cmd, 1024);
 

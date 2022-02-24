@@ -92,12 +92,17 @@ namespace userinfo
 
 			gsc::method::add("setname", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
 			{
-				const auto name = args[0].as<std::string>();
-
-				if (ent.classnum != 0 || ent.entnum > 17)
+				if (ent.classnum != 0)
 				{
 					throw std::runtime_error("Invalid entity");
 				}
+
+				if (game::g_entities[ent.entnum].client == nullptr)
+				{
+					throw std::runtime_error("Not a player entity");
+				}
+
+				const auto name = args[0].as<std::string>();
 
 				userinfo_overrides[ent.entnum]["name"] = name;
 				game::ClientUserinfoChanged(ent.entnum);
@@ -107,9 +112,14 @@ namespace userinfo
 
 			gsc::method::add("resetname", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
 			{
-				if (ent.classnum != 0 || ent.entnum > 17)
+				if (ent.classnum != 0)
 				{
 					throw std::runtime_error("Invalid entity");
+				}
+
+				if (game::g_entities[ent.entnum].client == nullptr)
+				{
+					throw std::runtime_error("Not a player entity");
 				}
 
 				userinfo_overrides[ent.entnum].erase("name");
@@ -120,12 +130,17 @@ namespace userinfo
 
 			gsc::method::add("setclantag", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
 			{
-				const auto name = args[0].as<std::string>();
-
-				if (ent.classnum != 0 || ent.entnum > 17)
+				if (ent.classnum != 0)
 				{
 					throw std::runtime_error("Invalid entity");
 				}
+
+				if (game::g_entities[ent.entnum].client == nullptr)
+				{
+					throw std::runtime_error("Not a player entity");
+				}
+
+				const auto name = args[0].as<std::string>();
 
 				userinfo_overrides[ent.entnum]["clantag"] = name;
 				userinfo_overrides[ent.entnum]["ec_TagText"] = name;
@@ -137,9 +152,14 @@ namespace userinfo
 
 			gsc::method::add("resetclantag", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
 			{
-				if (ent.classnum != 0 || ent.entnum > 17)
+				if (ent.classnum != 0)
 				{
 					throw std::runtime_error("Invalid entity");
+				}
+
+				if (game::g_entities[ent.entnum].client == nullptr)
+				{
+					throw std::runtime_error("Not a player entity");
 				}
 
 				userinfo_overrides[ent.entnum].erase("clantag");
@@ -152,9 +172,14 @@ namespace userinfo
 
 			gsc::method::add("removeclantag", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
 			{
-				if (ent.classnum != 0 || ent.entnum > 17)
+				if (ent.classnum != 0)
 				{
 					throw std::runtime_error("Invalid entity");
+				}
+
+				if (game::g_entities[ent.entnum].client == nullptr)
+				{
+					throw std::runtime_error("Not a player entity");
 				}
 
 				userinfo_overrides[ent.entnum]["clantag"] = "";
