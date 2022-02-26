@@ -269,8 +269,6 @@ namespace scripting
 		{
 			return get_custom_field(entity, field);
 		}
-
-		return {};
 	}
 
 	unsigned int make_array()

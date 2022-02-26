@@ -110,7 +110,7 @@ namespace userinfo
 				return {};
 			});
 
-			gsc::method::add("resetname", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
+			gsc::method::add("resetname", [](const game::scr_entref_t ent, const gsc::function_args&) -> scripting::script_value
 			{
 				if (ent.classnum != 0)
 				{
@@ -150,7 +150,7 @@ namespace userinfo
 				return {};
 			});
 
-			gsc::method::add("resetclantag", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
+			gsc::method::add("resetclantag", [](const game::scr_entref_t ent, const gsc::function_args&) -> scripting::script_value
 			{
 				if (ent.classnum != 0)
 				{
@@ -170,7 +170,7 @@ namespace userinfo
 				return {};
 			});
 
-			gsc::method::add("removeclantag", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
+			gsc::method::add("removeclantag", [](const game::scr_entref_t ent, const gsc::function_args&) -> scripting::script_value
 			{
 				if (ent.classnum != 0)
 				{

@@ -53,8 +53,6 @@ namespace gsc
 		{
 			std::vector<scripting::script_value> args;
 
-			const auto top = game::scr_VmPub->top;
-
 			for (auto i = 0; i < game::scr_VmPub->outparamcount; i++)
 			{
 				const auto value = game::scr_VmPub->top[-i];
@@ -380,7 +378,7 @@ namespace gsc
 				return {};
 			});
 
-			function::add("dropallbots", [](const function_args& args) -> scripting::script_value
+			function::add("dropallbots", [](const function_args&) -> scripting::script_value
 			{
 				for (auto i = 0; i < *game::svs_clientCount; i++)
 				{
@@ -437,7 +435,7 @@ namespace gsc
 				return {};
 			});
 
-			method::add("isbot", [](const game::scr_entref_t ent, const function_args& args) -> scripting::script_value
+			method::add("isbot", [](const game::scr_entref_t ent, const function_args&) -> scripting::script_value
 			{
 				if (ent.classnum != 0)
 				{
@@ -452,6 +450,23 @@ namespace gsc
 				}
 
 				return game::svs_clients[client].bIsTestClient;
+			});
+
+			method::add("arecontrolsfrozen", [](const game::scr_entref_t ent, const function_args&) -> scripting::script_value
+			{
+				if (ent.classnum != 0)
+				{
+						throw std::runtime_error("Invalid entity");
+				}
+
+				const auto client = ent.entnum;
+
+				if (game::g_entities[client].client == nullptr)
+				{
+						throw std::runtime_error("Not a player entity");
+				}
+
+				return {(game::g_entities[client].client->flags & 4) != 0};
 			});
 
 			utils::hook::jump(0x56C8EB, call_builtin_stub);
