@@ -36,32 +36,35 @@ workspace "iw5-gsc-utils"
 	targetdir "%{wks.location}/bin/%{cfg.buildcfg}"
 	targetname "%{prj.name}"
 
+	configurations { "Debug", "Release", }
+
 	language "C++"
+	cppdialect "C++20"
 
 	architecture "x86"
 
-	buildoptions "/std:c++latest"
 	systemversion "latest"
+	symbols "On"
+	staticruntime "On"
+	editandcontinue "Off"
+	warnings "Extra"
+	characterset "ASCII"
 
 	flags
 	{
 		"NoIncrementalLink",
 		"MultiProcessorCompile",
 	}
-
-	configurations { "Debug", "Release", }
-
-	symbols "On"
 	
-	configuration "Release"
+	filter "configurations:Release"
 		optimize "Full"
 		defines { "NDEBUG" }
-	configuration{}
+	filter {}
 
-	configuration "Debug"
+	filter "configurations:Debug"
 		optimize "Debug"
 		defines { "DEBUG", "_DEBUG" }
-	configuration {}
+	filter {}
 
 	startproject "iw5-gsc-utils"
 
