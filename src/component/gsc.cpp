@@ -456,14 +456,14 @@ namespace gsc
 			{
 				if (ent.classnum != 0)
 				{
-						throw std::runtime_error("Invalid entity");
+					throw std::runtime_error("Invalid entity");
 				}
 
 				const auto client = ent.entnum;
 
 				if (game::g_entities[client].client == nullptr)
 				{
-						throw std::runtime_error("Not a player entity");
+					throw std::runtime_error("Not a player entity");
 				}
 
 				return {(game::g_entities[client].client->flags & 4) != 0};
