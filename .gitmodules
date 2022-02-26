@@ -6,5 +6,5 @@
 	url = https://github.com/microsoft/GSL.git
 [submodule "deps/json"]
 	path = deps/json
-	url = https://github.com/nlohmann/json
+	url = https://github.com/nlohmann/json.git
 	branch = develop
