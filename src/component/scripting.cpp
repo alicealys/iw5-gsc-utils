@@ -95,7 +95,7 @@ namespace scripting
 			const auto file_id = atoi(filename);
 			if (file_id)
 			{
-				current_file = scripting::file_list[file_id];
+				current_file = scripting::find_file(file_id);
 			}
 
 			process_script_hook.invoke<void>(filename);

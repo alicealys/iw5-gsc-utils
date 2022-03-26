@@ -469,8 +469,12 @@ namespace gsc
 				return {(game::g_entities[client].client->flags & 4) != 0};
 			});
 
-			utils::hook::jump(0x56C8EB, call_builtin_stub);
-			utils::hook::jump(0x56CBDC, call_builtin_method_stub);
+			// let other plugins read the pointers
+			post_load_callbacks.push_back([]()
+			{
+				utils::hook::jump(0x56C8EB, call_builtin_stub);
+				utils::hook::jump(0x56CBDC, call_builtin_method_stub);
+			});
 		}
 	};
 }

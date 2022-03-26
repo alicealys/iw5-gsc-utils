@@ -16,6 +16,11 @@ namespace game
 			return dedi_;
 		}
 
+		void set(const size_t dedi)
+		{
+			this->dedi_ = reinterpret_cast<T*>(dedi);
+		}
+
 		operator T* () const
 		{
 			return this->get();
