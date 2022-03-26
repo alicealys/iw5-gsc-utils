@@ -53,7 +53,7 @@ namespace signatures
 	{
 		char bytes[4] = {0};
 		const auto string_ptr = find_string_ptr(string);
-		memcpy(bytes, &string_ptr, sizeof(size_t));
+		memcpy(bytes, &string_ptr, sizeof(bytes));
 		return find_string_ptr(bytes);
 	}
 
