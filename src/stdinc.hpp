@@ -28,6 +28,7 @@
 #include <map>
 #include <csetjmp>
 #include <atlcomcli.h>
+#include <Psapi.h>
 
 #pragma comment(lib, "urlmon.lib")
 

@@ -7,10 +7,10 @@ namespace scripting
 {
 	namespace
 	{
-		std::unordered_map<std::string, unsigned> lowercase_map(
-			const std::unordered_map<std::string, unsigned>& old_map)
+		std::unordered_map<std::string, uint16_t> lowercase_map(
+			const std::unordered_map<std::string, uint16_t>& old_map)
 		{
-			std::unordered_map<std::string, unsigned> new_map{};
+			std::unordered_map<std::string, uint16_t> new_map{};
 			for (auto& entry : old_map)
 			{
 				new_map[utils::string::to_lower(entry.first)] = entry.second;
@@ -19,15 +19,15 @@ namespace scripting
 			return new_map;
 		}
 
-		const std::unordered_map<std::string, unsigned>& get_methods()
+		const std::unordered_map<std::string, uint16_t>& get_methods()
 		{
-			static auto methods = lowercase_map(method_map);
+			static auto methods = lowercase_map(*game::plutonium::method_map_rev);
 			return methods;
 		}
 
-		const std::unordered_map<std::string, unsigned>& get_functions()
+		const std::unordered_map<std::string, uint16_t>& get_functions()
 		{
-			static auto function = lowercase_map(function_map);
+			static auto function = lowercase_map(*game::plutonium::function_map_rev);
 			return function;
 		}
 
@@ -71,8 +71,23 @@ namespace scripting
 		}
 	}
 
+	std::string find_file(unsigned int id)
+	{
+		const auto& file_map = *game::plutonium::file_map_rev;
+		for (const auto& file : file_map)
+		{
+			if (file.second == id)
+			{
+				return file.first;
+			}
+		}
+
+		return {};
+	}
+
 	std::string find_token(unsigned int id)
 	{
+		const auto& token_map = *game::plutonium::token_map_rev;
 		for (const auto& token : token_map)
 		{
 			if (token.second == id)
@@ -86,6 +101,7 @@ namespace scripting
 
 	int find_token_id(const std::string& name)
 	{
+		const auto& token_map = *game::plutonium::token_map_rev;
 		const auto result = token_map.find(name);
 
 		if (result != token_map.end())
