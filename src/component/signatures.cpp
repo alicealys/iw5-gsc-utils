@@ -70,19 +70,6 @@ namespace signatures
 		game::plutonium::method_map_rev.set(map_ptr + 0x20);
 		game::plutonium::file_map_rev.set(map_ptr + 0x40);
 		game::plutonium::token_map_rev.set(map_ptr + 0x60);
-
-		for (const auto& function : *game::plutonium::function_map_rev)
-		{
-			utils::io::write_file("functions.txt", function.first, true);
-			utils::io::write_file("functions.txt", "\n", true);
-		}
-
-		for (const auto& function : *game::plutonium::method_map_rev)
-		{
-			utils::io::write_file("methods.txt", function.first, true);
-			utils::io::write_file("methods.txt", "\n", true);
-		}
-
 		return true;
 	}
 
