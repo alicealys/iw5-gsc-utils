@@ -21,7 +21,7 @@ namespace gsc
 	{
 		std::string method_name(unsigned int id)
 		{
-			const auto map = *game::plutonium::method_map_rev;
+			const auto& map = *game::plutonium::method_map_rev;
 
 			for (const auto& function : map)
 			{
@@ -36,7 +36,7 @@ namespace gsc
 
 		std::string function_name(unsigned int id)
 		{
-			const auto map = *game::plutonium::function_map_rev;
+			const auto& map = *game::plutonium::function_map_rev;
 
 			for (const auto& function : map)
 			{
@@ -192,7 +192,7 @@ namespace gsc
 				return scr_get_object_field_hook.invoke<void>(classnum, entnum, offset);
 			}
 
-			const auto field = custom_fields[classnum][offset];
+			const auto& field = custom_fields[classnum][offset];
 
 			try
 			{
@@ -217,7 +217,7 @@ namespace gsc
 			}
 
 			const auto args = get_arguments();
-			const auto field = custom_fields[classnum][offset];
+			const auto& field = custom_fields[classnum][offset];
 
 			try
 			{
@@ -272,11 +272,20 @@ namespace gsc
 			const std::function<scripting::script_value(unsigned int entnum)>& getter,
 			const std::function<void(unsigned int entnum, const scripting::script_value&)>& setter)
 		{
-			const auto token_id = token_map_start++;
-			const auto offset = field_offset_start++;
+			uint16_t token_id{};
+			auto& token_map = *game::plutonium::token_map_rev;
+			if (token_map.find(name) != token_map.end())
+			{
+				token_id = token_map.at(name);
+			}
+			else
+			{
+				token_id = token_map_start++;
+				token_map.insert(std::make_pair(name, token_id));
+			}
 
+			const auto offset = field_offset_start++;
 			custom_fields[classnum][offset] = {name, getter, setter};
-			(*game::plutonium::token_map_rev)[name] = token_id;
 
 			post_load_callbacks.push_back([classnum, name, token_id, offset]()
 			{
@@ -320,7 +329,7 @@ namespace gsc
 			scr_set_object_field_hook.create(0x52BCC0, scr_set_object_field_stub);
 			scr_post_load_scripts_hook.create(0x628B50, scr_post_load_scripts_stub);
 
-			field::add(classid::entity, "flags",
+			field::add(classid::entity, "entityflags",
 				[](unsigned int entnum) -> scripting::script_value
 				{
 					const auto entity = &game::g_entities[entnum];
