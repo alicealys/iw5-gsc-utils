@@ -2,8 +2,6 @@
 #include "signatures.hpp"
 #include <utils/hook.hpp>
 
-#define PAYLOAD_SIZE 0x20000000
-
 namespace signatures
 {
 	size_t load_image_size()
@@ -34,7 +32,8 @@ namespace signatures
 	{
 		const char* string_ptr = nullptr;
 		std::string mask(string.size(), 'x');
-		utils::hook::signature signature(PAYLOAD_SIZE, get_image_size() - PAYLOAD_SIZE);
+		const auto base = reinterpret_cast<size_t>(GetModuleHandle("plutonium-bootstrapper-win32.exe"));
+		utils::hook::signature signature(base, get_image_size() - base);
 
 		signature.add({
 			string,
@@ -89,7 +88,6 @@ namespace signatures
 	bool process()
 	{
 		load_function_tables();
-		process_printf();
-		return process_maps();
+		return process_printf() && process_maps();
 	}
 }
