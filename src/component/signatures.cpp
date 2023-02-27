@@ -52,23 +52,35 @@ namespace signatures
 	{
 		char bytes[4] = {0};
 		const auto string_ptr = find_string_ptr(string);
-		memcpy(bytes, &string_ptr, sizeof(bytes));
+		if (!string_ptr)
+		{
+			return 0;
+		}
+
+		std::memcpy(bytes, &string_ptr, sizeof(bytes));
 		return find_string_ptr({bytes, 4});
 	}
 
 	bool process_maps()
 	{
-		const auto string_ref = find_string_ref("Couldn't resolve builtin function id for name '%s'!");
+		const auto string_ref = find_string_ref("couldn't resolve builtin function id for name '%s'!");
 		if (!string_ref)
 		{
 			return false;
 		}
 
-		const auto map_ptr = *reinterpret_cast<size_t*>(string_ref - 0x3A);
+		const auto map_ptr = *reinterpret_cast<size_t*>(string_ref - 0x2B);
 		game::plutonium::function_map_rev.set(map_ptr);
+		printf("%p\n", map_ptr);
+
+
+		auto& map = *game::plutonium::function_map_rev;
+		for (const auto& [k, v] : map)
+		{
+			printf("%s %i\n", k.data(), v);
+		}
 		game::plutonium::method_map_rev.set(map_ptr + 0x20);
-		game::plutonium::file_map_rev.set(map_ptr + 0x40);
-		game::plutonium::token_map_rev.set(map_ptr + 0x60);
+		game::plutonium::token_map_rev.set(map_ptr + 0xBC);
 		return true;
 	}
 
@@ -82,12 +94,15 @@ namespace signatures
 
 		const auto offset = *reinterpret_cast<size_t*>(string_ref + 5);
 		game::plutonium::printf.set(string_ref + 4 + 5 + offset);
+		utils::hook::jump(reinterpret_cast<uintptr_t>(&printf), game::plutonium::printf);
+
 		return true;
 	}
 
 	bool process()
 	{
 		load_function_tables();
-		return process_printf() && process_maps();
+		process_printf();
+		return  process_maps();
 	}
 }
