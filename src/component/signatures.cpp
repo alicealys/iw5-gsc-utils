@@ -71,14 +71,6 @@ namespace signatures
 
 		const auto map_ptr = *reinterpret_cast<size_t*>(string_ref - 0x2B);
 		game::plutonium::function_map_rev.set(map_ptr);
-		printf("%p\n", map_ptr);
-
-
-		auto& map = *game::plutonium::function_map_rev;
-		for (const auto& [k, v] : map)
-		{
-			printf("%s %i\n", k.data(), v);
-		}
 		game::plutonium::method_map_rev.set(map_ptr + 0x20);
 		game::plutonium::token_map_rev.set(map_ptr + 0xBC);
 		return true;
@@ -94,7 +86,6 @@ namespace signatures
 
 		const auto offset = *reinterpret_cast<size_t*>(string_ref + 5);
 		game::plutonium::printf.set(string_ref + 4 + 5 + offset);
-		utils::hook::jump(reinterpret_cast<uintptr_t>(&printf), game::plutonium::printf);
 
 		return true;
 	}
@@ -102,7 +93,6 @@ namespace signatures
 	bool process()
 	{
 		load_function_tables();
-		process_printf();
-		return  process_maps();
+		return process_printf() && process_maps();
 	}
 }
