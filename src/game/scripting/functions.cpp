@@ -8,12 +8,12 @@ namespace scripting
 	namespace
 	{
 		std::unordered_map<std::string, uint16_t> lowercase_map(
-			const std::unordered_map<std::string, uint16_t>& old_map)
+			const std::unordered_map<std::string_view, uint16_t>& old_map)
 		{
 			std::unordered_map<std::string, uint16_t> new_map{};
 			for (auto& entry : old_map)
 			{
-				new_map[utils::string::to_lower(entry.first)] = entry.second;
+				new_map[utils::string::to_lower(entry.first.data())] = entry.second;
 			}
 
 			return new_map;
@@ -71,20 +71,6 @@ namespace scripting
 		}
 	}
 
-	std::string find_file(unsigned int id)
-	{
-		const auto& file_map = *game::plutonium::file_map_rev;
-		for (const auto& file : file_map)
-		{
-			if (file.second == id)
-			{
-				return file.first;
-			}
-		}
-
-		return {};
-	}
-
 	std::string find_token(unsigned int id)
 	{
 		const auto& token_map = *game::plutonium::token_map_rev;
@@ -92,11 +78,16 @@ namespace scripting
 		{
 			if (token.second == id)
 			{
-				return token.first;
+				return token.first.data();
 			}
 		}
 
 		return {};
+	}
+
+	std::string find_file(unsigned int id)
+	{
+		return find_token(id);
 	}
 
 	int find_token_id(const std::string& name)

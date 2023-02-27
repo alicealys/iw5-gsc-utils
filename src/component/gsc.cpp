@@ -27,7 +27,7 @@ namespace gsc
 			{
 				if (function.second == id)
 				{
-					return function.first;
+					return function.first.data();
 				}
 			}
 
@@ -42,7 +42,7 @@ namespace gsc
 			{
 				if (function.second == id)
 				{
-					return function.first;
+					return function.first.data();
 				}
 			}
 
@@ -251,7 +251,8 @@ namespace gsc
 			const auto index = function_map_start++;
 
 			functions[index] = func;
-			(*game::plutonium::function_map_rev)[name] = index;
+			const auto name_view = utils::memory::get_allocator()->duplicate_string(name);
+			(*game::plutonium::function_map_rev)[name_view] = index;
 		}
 	}
 
@@ -262,7 +263,8 @@ namespace gsc
 			const auto index = method_map_start++;
 
 			methods[index] = func;
-			(*game::plutonium::method_map_rev)[name] = index;
+			const auto name_view = utils::memory::get_allocator()->duplicate_string(name);
+			(*game::plutonium::method_map_rev)[name_view] = index;
 		}
 	}
 
