@@ -78,7 +78,7 @@ namespace scripting
 		{
 			if (token.second == id)
 			{
-				return token.first.data();
+				return token.first;
 			}
 		}
 
