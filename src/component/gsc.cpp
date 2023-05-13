@@ -21,7 +21,7 @@ namespace gsc
 	{
 		std::string method_name(unsigned int id)
 		{
-			const auto& map = *game::plutonium::method_map_rev;
+			const auto& map = (*game::plutonium::gsc_ctx)->meth_map();
 
 			for (const auto& function : map)
 			{
@@ -36,7 +36,7 @@ namespace gsc
 
 		std::string function_name(unsigned int id)
 		{
-			const auto& map = *game::plutonium::function_map_rev;
+			const auto& map = (*game::plutonium::gsc_ctx)->func_map();
 
 			for (const auto& function : map)
 			{
@@ -248,11 +248,16 @@ namespace gsc
 	{
 		void add(const std::string& name, const script_function& func)
 		{
-			const auto index = function_map_start++;
-
-			functions[index] = func;
-			const auto name_view = utils::memory::get_allocator()->duplicate_string(name);
-			(*game::plutonium::function_map_rev)[name_view] = index;
+			try
+			{
+				const auto index = function_map_start++;
+				functions[index] = func;
+				(*game::plutonium::gsc_ctx)->func_add(name, index);
+			}
+			catch (const std::exception& e)
+			{
+				printf("[iw5-gsc-utils] failed to add function \"%s\": %s\n", name.data(), e.what());
+			}
 		}
 	}
 
@@ -260,11 +265,16 @@ namespace gsc
 	{
 		void add(const std::string& name, const script_method& func)
 		{
-			const auto index = method_map_start++;
-
-			methods[index] = func;
-			const auto name_view = utils::memory::get_allocator()->duplicate_string(name);
-			(*game::plutonium::method_map_rev)[name_view] = index;
+			try
+			{
+				const auto index = method_map_start++;
+				methods[index] = func;
+				(*game::plutonium::gsc_ctx)->meth_add(name, index);
+			}
+			catch (const std::exception& e)
+			{
+				printf("[iw5-gsc-utils] failed to add method \"%s\": %s\n", name.data(), e.what());
+			}
 		}
 	}
 
@@ -274,25 +284,13 @@ namespace gsc
 			const std::function<scripting::script_value(unsigned int entnum)>& getter,
 			const std::function<void(unsigned int entnum, const scripting::script_value&)>& setter)
 		{
-			uint16_t token_id{};
-			auto& token_map = *game::plutonium::token_map_rev;
-			if (token_map.find(name) != token_map.end())
-			{
-				token_id = token_map.at(name);
-			}
-			else
-			{
-				token_id = token_map_start++;
-				token_map.insert(std::make_pair(name, token_id));
-			}
-
 			const auto offset = field_offset_start++;
 			custom_fields[classnum][offset] = {name, getter, setter};
 
-			post_load_callbacks.push_back([classnum, name, token_id, offset]()
+			post_load_callbacks.push_back([=]()
 			{
 				const auto name_str = game::SL_GetString(name.data(), 0);
-				game::Scr_AddClassField(classnum, name_str, token_id, offset);
+				game::Scr_AddClassField(classnum, name_str, game::SL_GetCanonicalString(name.data()), offset);
 			});
 		}
 	}
