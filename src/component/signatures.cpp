@@ -61,18 +61,16 @@ namespace signatures
 		return find_string_ptr({bytes, 4});
 	}
 
-	bool process_maps()
+	bool process_gsc_ctx()
 	{
-		const auto string_ref = find_string_ref("couldn't resolve builtin function id for name '%s'!");
+		const auto string_ref = find_string_ref("in call to builtin %s");
 		if (!string_ref)
 		{
 			return false;
 		}
-
-		const auto map_ptr = *reinterpret_cast<size_t*>(string_ref - 0x2B);
-		game::plutonium::function_map_rev.set(map_ptr);
-		game::plutonium::method_map_rev.set(map_ptr + 0x20);
-		game::plutonium::token_map_rev.set(map_ptr + 0xBC);
+		
+		const auto gsc_ctx_ptr = *reinterpret_cast<size_t*>(string_ref - 0x8C);
+		game::plutonium::gsc_ctx.set(gsc_ctx_ptr);
 		return true;
 	}
 
@@ -93,6 +91,6 @@ namespace signatures
 	bool process()
 	{
 		load_function_tables();
-		return process_printf() && process_maps();
+		return process_printf() && process_gsc_ctx();
 	}
 }

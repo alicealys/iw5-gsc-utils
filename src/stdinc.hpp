@@ -8,6 +8,8 @@
 #pragma warning(disable: 4996)
 #pragma warning(disable: 26812)
 
+#include <xsk/gsc/engine/iw5_pc.hpp>
+
 #define DLL_EXPORT extern "C" __declspec(dllexport)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -36,6 +38,7 @@ using namespace std::literals;
 
 #include <gsl/gsl>
 #include <MinHook.h>
+
 
 #include "utils/memory.hpp"
 #include "utils/string.hpp"
