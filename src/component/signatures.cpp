@@ -63,13 +63,13 @@ namespace signatures
 
 	bool process_gsc_ctx()
 	{
-		const auto string_ref = find_string_ref("in call to builtin %s \"%s\"");
+		const auto string_ref = find_string_ref("in call to builtin {} \"{}\"");
 		if (!string_ref)
 		{
 			return false;
 		}
 		
-		const auto gsc_ctx_ptr = *reinterpret_cast<size_t*>(string_ref - 0xAD);
+		const auto gsc_ctx_ptr = *reinterpret_cast<size_t*>(string_ref - 0xED);
 		game::plutonium::gsc_ctx.set(gsc_ctx_ptr);
 		return true;
 	}
