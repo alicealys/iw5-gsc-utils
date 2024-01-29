@@ -63,13 +63,15 @@ namespace signatures
 
 	bool process_gsc_ctx()
 	{
-		const auto string_ref = find_string_ref("in call to builtin {} \"{}\"");
+		const auto string_ref = find_string_ref("in call to builtin %s \"%s\"");
 		if (!string_ref)
 		{
 			return false;
 		}
 		
-		const auto gsc_ctx_ptr = *reinterpret_cast<size_t*>(string_ref - 0xED);
+		const auto gsc_ctx_ptr = *reinterpret_cast<size_t*>(string_ref - 0xAD);
+		OutputDebugString(utils::string::va("string_ref: %p\n", string_ref));
+		OutputDebugString(utils::string::va("gsc_ctx_ptr: %p\n", gsc_ctx_ptr));
 		game::plutonium::gsc_ctx.set(gsc_ctx_ptr);
 		return true;
 	}
@@ -83,7 +85,9 @@ namespace signatures
 		}
 
 		const auto offset = *reinterpret_cast<size_t*>(string_ref + 5);
-		game::plutonium::printf.set(string_ref + 4 + 5 + offset);
+		const auto printf_ptr = string_ref + 4 + 5 + offset;
+		OutputDebugString(utils::string::va("printf_ptr: %p\n", printf_ptr));
+		game::plutonium::printf.set(printf_ptr);
 
 		return true;
 	}
