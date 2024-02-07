@@ -248,16 +248,21 @@ namespace gsc
 	{
 		void add(const std::string& name, const script_function& func)
 		{
-			try
+			auto index = 0u;
+			auto& ctx = (*game::plutonium::gsc_ctx);
+			
+			if (ctx->func_exists(name))
 			{
-				const auto index = function_map_start++;
-				functions[index] = func;
-				(*game::plutonium::gsc_ctx)->func_add(name, index);
+				printf("[iw5-gsc-utils] Warning: function '%s' already defined\n", name.data());
+				index = ctx->func_id(name);
 			}
-			catch (const std::exception& e)
+			else
 			{
-				printf("[iw5-gsc-utils] failed to add function \"%s\": %s\n", name.data(), e.what());
+				index = function_map_start++;
+				ctx->func_add(name, index);
 			}
+
+			functions.insert(std::make_pair(index, func));
 		}
 	}
 
@@ -265,16 +270,21 @@ namespace gsc
 	{
 		void add(const std::string& name, const script_method& func)
 		{
-			try
+			auto index = 0u;
+			auto& ctx = (*game::plutonium::gsc_ctx);
+
+			if (ctx->meth_exists(name))
 			{
-				const auto index = method_map_start++;
-				methods[index] = func;
-				(*game::plutonium::gsc_ctx)->meth_add(name, index);
+				printf("[iw5-gsc-utils] Warning: method '%s' already defined\n", name.data());
+				index = ctx->meth_id(name);
 			}
-			catch (const std::exception& e)
+			else
 			{
-				printf("[iw5-gsc-utils] failed to add method \"%s\": %s\n", name.data(), e.what());
+				index = method_map_start++;
+				ctx->meth_add(name, index);
 			}
+
+			methods.insert(std::make_pair(index, func));
 		}
 	}
 

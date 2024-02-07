@@ -35,11 +35,18 @@ namespace signatures
 		const auto base = reinterpret_cast<size_t>(GetModuleHandle("plutonium-bootstrapper-win32.exe"));
 		utils::hook::signature signature(base, get_image_size() - base);
 
+		auto found = false;
 		signature.add({
 			string,
 			mask,
 			[&](char* address)
 			{
+				if (found)
+				{
+					return;
+				}
+
+				found = true;
 				string_ptr = address;
 			}
 		});
@@ -70,7 +77,6 @@ namespace signatures
 		}
 		
 		const auto gsc_ctx_ptr = *reinterpret_cast<size_t*>(string_ref - 0xAD);
-		OutputDebugString(utils::string::va("string_ref: %p\n", string_ref));
 		OutputDebugString(utils::string::va("gsc_ctx_ptr: %p\n", gsc_ctx_ptr));
 		game::plutonium::gsc_ctx.set(gsc_ctx_ptr);
 		return true;
