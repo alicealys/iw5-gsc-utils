@@ -71,4 +71,4 @@ namespace notifies
 	};
 }
 
-REGISTER_COMPONENT(notifies::component)
+//REGISTER_COMPONENT(notifies::component)

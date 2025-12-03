@@ -194,4 +194,4 @@ namespace json
 	};
 }
 
-REGISTER_COMPONENT(json::component)
+//REGISTER_COMPONENT(json::component)

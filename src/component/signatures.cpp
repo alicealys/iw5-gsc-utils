@@ -34,7 +34,7 @@ namespace signatures
 		std::string mask(string.size(), 'x');
 		const auto base = reinterpret_cast<size_t>(GetModuleHandle("plutonium-bootstrapper-win32.exe"));
 		utils::hook::signature signature(base, get_image_size() - base);
-
+		OutputDebugString(utils::string::va("%p %p\n", base, get_image_size()));
 		auto found = false;
 		signature.add({
 			string,
@@ -70,37 +70,23 @@ namespace signatures
 
 	bool process_gsc_ctx()
 	{
+		OutputDebugString("HELLOOO");
+
 		const auto string_ref = find_string_ref("in call to builtin %s \"%s\"");
 		if (!string_ref)
 		{
 			return false;
 		}
-		
-		const auto gsc_ctx_ptr = *reinterpret_cast<size_t*>(string_ref - 0xAD);
+
+		const auto gsc_ctx_ptr = *reinterpret_cast<size_t*>(string_ref + 215);
 		OutputDebugString(utils::string::va("gsc_ctx_ptr: %p\n", gsc_ctx_ptr));
 		game::plutonium::gsc_ctx.set(gsc_ctx_ptr);
-		return true;
-	}
-
-	bool process_printf()
-	{
-		const auto string_ref = find_string_ref("A critical exception occured!\n");
-		if (!string_ref)
-		{
-			return false;
-		}
-
-		const auto offset = *reinterpret_cast<size_t*>(string_ref + 5);
-		const auto printf_ptr = string_ref + 4 + 5 + offset;
-		OutputDebugString(utils::string::va("printf_ptr: %p\n", printf_ptr));
-		game::plutonium::printf.set(printf_ptr);
-
 		return true;
 	}
 
 	bool process()
 	{
 		load_function_tables();
-		return process_printf() && process_gsc_ctx();
+		return process_gsc_ctx();
 	}
 }

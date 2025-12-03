@@ -43,4 +43,4 @@ namespace string
 	};
 }
 
-REGISTER_COMPONENT(string::component)
+//REGISTER_COMPONENT(string::component)

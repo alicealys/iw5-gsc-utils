@@ -87,7 +87,6 @@ namespace game
 	namespace plutonium
 	{
 		WEAK symbol<std::unique_ptr<xsk::gsc::iw5_pc::context>> gsc_ctx{0};
-		WEAK symbol<int(const char* fmt, ...)> printf{0};
 		WEAK symbol<void*> function_table{0};
 		WEAK symbol<void*> method_table{0};
 	}
