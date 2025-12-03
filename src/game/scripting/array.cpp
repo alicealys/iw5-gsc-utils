@@ -212,8 +212,6 @@ namespace scripting
 		{
 			return this->get(key.as<std::string>());
 		}
-
-		return {};
 	}
 
 	script_value array::get(const std::string& key) const

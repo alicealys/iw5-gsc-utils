@@ -14,3 +14,6 @@
 [submodule "deps/zlib"]
 	path = deps/zlib
 	url = https://github.com/madler/zlib.git
+[submodule "deps/plutonium-sdk"]
+	path = deps/plutonium-sdk
+	url = https://github.com/plutoniummod/plutonium-sdk.git

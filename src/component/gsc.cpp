@@ -270,6 +270,11 @@ namespace gsc
 	{
 		void add(const std::string& name, const script_method& func)
 		{
+			if (true)
+			{
+				return;
+			}
+
 			auto index = 0u;
 			auto& ctx = (*game::plutonium::gsc_ctx);
 

@@ -179,4 +179,4 @@ namespace io
 	};
 }
 
-REGISTER_COMPONENT(io::component)
+//REGISTER_COMPONENT(io::component)

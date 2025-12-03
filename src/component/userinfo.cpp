@@ -193,4 +193,4 @@ namespace userinfo
 	};
 }
 
-REGISTER_COMPONENT(userinfo::component)
+//REGISTER_COMPONENT(userinfo::component)
