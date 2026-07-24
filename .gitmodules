@@ -4,16 +4,6 @@
 [submodule "deps/GSL"]
 	path = deps/GSL
 	url = https://github.com/microsoft/GSL.git
-[submodule "deps/json"]
-	path = deps/json
-	url = https://github.com/nlohmann/json.git
-	branch = develop
-[submodule "deps/gsc-tool"]
-	path = deps/gsc-tool
-	url = https://github.com/xensik/gsc-tool.git
-[submodule "deps/zlib"]
-	path = deps/zlib
-	url = https://github.com/madler/zlib.git
 [submodule "deps/plutonium-sdk"]
 	path = deps/plutonium-sdk
 	url = https://github.com/plutoniummod/plutonium-sdk.git
