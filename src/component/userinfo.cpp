@@ -19,6 +19,89 @@ namespace userinfo
 	namespace
 	{
 		utils::hook::detour sv_getuserinfo_hook;
+		utils::hook::detour clean_name_hook;
+		utils::hook::detour client_userinfo_changed_hook;
+
+		/*
+		 * ClientCleanName strips ^colour codes from every name the server
+		 * publishes, which is why setname() text arrives but colours do not.
+		 *
+		 * It is NOT enough to bypass it only while setname() drives
+		 * ClientUserinfoChanged: the override lives on in userinfo_overrides,
+		 * so the engine's own later calls (spawn, class change, ...) re-read
+		 * the same name and strip it again - the last pass wins, and the
+		 * colours vanish a moment after they were applied.
+		 *
+		 * So the gate is "does THIS client have a plugin-set name", decided in
+		 * the ClientUserinfoChanged detour, which covers every caller. Real
+		 * players keep being cleaned normally and cannot colour themselves.
+		 */
+		bool preserve_colour_codes = false;
+
+		class colour_scope final
+		{
+		public:
+			colour_scope() { preserve_colour_codes = true; }
+			~colour_scope() { preserve_colour_codes = false; }
+
+			colour_scope(const colour_scope&) = delete;
+			colour_scope& operator=(const colour_scope&) = delete;
+		};
+
+		void clean_name_stub(const char* src, char* dest, int size)
+		{
+			// An empty result would leave the client nameless, so let the
+			// original run and apply its "UnnamedPlayer" fallback.
+			if (!preserve_colour_codes || !src || !*src || !dest || size <= 1)
+			{
+				clean_name_hook.invoke<void>(src, dest, size);
+				return;
+			}
+
+			// Verbatim copy, still honouring the caller's buffer (16 bytes for
+			// the name field). Plain loop, no CRT, since this runs inside the
+			// engine's userinfo path.
+			int i = 0;
+			for (; i < size - 1 && src[i]; i++)
+			{
+				dest[i] = src[i];
+			}
+			dest[i] = '\0';
+		}
+
+		bool has_plugin_set_name(int client)
+		{
+			const auto it = userinfo_overrides.find(client);
+			if (it == userinfo_overrides.end())
+			{
+				return false;
+			}
+
+			// ClientUserinfoChanged cleans both the name and the clantag, so
+			// either override is reason enough to keep colour codes.
+			for (const auto* key : { "name", "clantag", "ec_TagText" })
+			{
+				const auto value = it->second.find(key);
+				if (value != it->second.end() && !value->second.empty())
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		void client_userinfo_changed_stub(int client)
+		{
+			if (!has_plugin_set_name(client))
+			{
+				client_userinfo_changed_hook.invoke<void>(client);
+				return;
+			}
+
+			colour_scope _;
+			client_userinfo_changed_hook.invoke<void>(client);
+		}
 
 		userinfo_map userinfo_to_map(std::string userinfo)
 		{
@@ -93,6 +176,14 @@ namespace userinfo
 	void init()
 		{
 			sv_getuserinfo_hook.create(0x573E00, sv_getuserinfo_stub);
+			clean_name_hook.create(
+				reinterpret_cast<size_t>(game::ClientCleanName.get()), clean_name_stub);
+
+			// Covers every caller of ClientUserinfoChanged - ours and the
+			// engine's - so a plugin-set name keeps its colours for good.
+			client_userinfo_changed_hook.create(
+				reinterpret_cast<size_t>(game::ClientUserinfoChanged.get()),
+				client_userinfo_changed_stub);
 
 			gsc::method::add("setname", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
 			{
@@ -109,6 +200,9 @@ namespace userinfo
 				const auto name = args[0].as<std::string>();
 
 				userinfo_overrides[ent.entnum]["name"] = name;
+
+				// Colour codes survive because the ClientUserinfoChanged
+				// detour sees the override - no scope needed here.
 				game::ClientUserinfoChanged(ent.entnum);
 
 				return {};

@@ -50,6 +50,12 @@ namespace game
 	WEAK symbol<void(unsigned int notifyListOwnerId, unsigned int stringValue, VariableValue* top)> VM_Notify{0x569720};
 
 	WEAK symbol<void(int client)> ClientUserinfoChanged{0x4FADB0};
+
+	// Sanitises a player name into a 16-byte buffer: strips ^0-^; colour codes,
+	// '}'/']' pairs and leading spaces, falling back to "UnnamedPlayer" when
+	// nothing survives. cdecl, args (src, dest, size).
+	// ClientUserinfoChanged calls it twice - once for name, once for clantag.
+	WEAK symbol<void(const char* src, char* dest, int size)> ClientCleanName{0x5C3A50};
 	WEAK symbol<void(int clientNum, int type, const char* command)> SV_GameSendServerCommand{0x573220};
 	WEAK symbol<void(client_s* drop, const char* reason, bool tellThem)> SV_DropClient{0x570980};
 
