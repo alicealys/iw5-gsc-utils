@@ -2,6 +2,12 @@
 #include "entity.hpp"
 #include "script_value.hpp"
 
+/*
+ * Wraps a SCRIPT_FUNCTION code position received from gsc (the `::my_func`
+ * syntax). call() runs it through exec_ent_thread, which is what lets a
+ * builtin store a gsc callback and fire it later (addCommand).
+ */
+
 namespace scripting
 {
 	class function
@@ -28,6 +34,7 @@ namespace scripting
 		{
 			return this->call(*game::levelEntityId, {});
 		}
+
 	private:
 		const char* pos_;
 	};

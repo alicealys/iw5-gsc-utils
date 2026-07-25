@@ -1,11 +1,15 @@
 #include <stdinc.hpp>
-#include "loader/component_loader.hpp"
-
-#include "scheduler.hpp"
-#include "gsc.hpp"
-#include "json.hpp"
+#include "component/gsc.hpp"
+#include "component/json.hpp"
+#include "game/scripting/entity.hpp"
+#include "game/scripting/function.hpp"
 
 #include <json.hpp>
+
+/*
+ * Ported from upstream iw5-gsc-utils's component/json.cpp verbatim (logic
+ * unchanged) - only the registration call target changed.
+ */
 
 namespace json
 {
@@ -20,7 +24,7 @@ namespace json
 
 			auto string_indexed = -1;
 			const auto keys = array.get_keys();
-			for (auto i = 0; i < keys.size(); i++)
+			for (size_t i = 0; i < keys.size(); i++)
 			{
 				const auto is_int = keys[i].is<int>();
 				const auto is_string = keys[i].is<std::string>();
@@ -130,6 +134,8 @@ namespace json
 
 				return array.get_raw();
 			}
+			default:
+				break;
 			}
 
 			return {};
@@ -141,10 +147,7 @@ namespace json
 		return gsc_to_json(value).dump();
 	}
 
-	class component final : public component_interface
-	{
-	public:
-		void post_unpack() override
+	void init()
 		{
 			gsc::function::add("array", [](const gsc::function_args& args)
 			{
@@ -156,15 +159,15 @@ namespace json
 			{
 				scripting::array array;
 
-				for (auto i = 0; i < args.size(); i += 2)
+			for (size_t i = 0; i < args.size(); i += 2)
 				{
 					if (i >= args.size() - 1)
 					{
 						continue;
 					}
 
-					const auto key = args[i].as<std::string>();
-					array[key] = args[i + 1];
+				const auto key = args[static_cast<int>(i)].as<std::string>();
+				array[key] = args[static_cast<int>(i) + 1];
 				}
 
 				return array;
@@ -191,7 +194,4 @@ namespace json
 				return gsc_to_json(value).dump(indent);
 			});
 		}
-	};
 }
-
-//REGISTER_COMPONENT(json::component)

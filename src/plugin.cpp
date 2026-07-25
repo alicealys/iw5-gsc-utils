@@ -1,12 +1,10 @@
 #include <stdinc.hpp>
-#include "loader/component_loader.hpp"
-
 #include "plugin.hpp"
-
-#include "component/signatures.hpp"
-
-#include <utils/hook.hpp>
-#include <utils/string.hpp>
+#include "component/command.hpp"
+#include "component/gsc.hpp"
+#include "component/io.hpp"
+#include "component/json.hpp"
+#include "component/userinfo.hpp"
 
 namespace plugin
 {
@@ -46,24 +44,23 @@ namespace plugin
 	{
 		this->interface_ = interface_ptr;
 		this->game_ = game;
+
 		utils::hook::jump(reinterpret_cast<uintptr_t>(&printf), printf_stub);
 
-		if (!signatures::process())
-		{
-			MessageBoxA(NULL,
-				"This version of iw5-gsc-utils is outdated.\n" \
-				"Download the latest dll from here: https://github.com/alicealys/iw5-gsc-utils/releases",
-				"ERROR", MB_ICONERROR);
-		}
-		else
-		{
-			component_loader::post_unpack();
-		}
+		interface_ptr->logging()->info("[iw5-gsc-utils] on_startup - registering functions/methods");
+
+		gsc::init(interface_ptr);
+
+		io::init();
+		json::init();
+		userinfo::init();
+		command::init();
+
+		interface_ptr->logging()->info("[iw5-gsc-utils] registration complete (io + json + userinfo + command)");
 	}
 
 	void plugin::on_shutdown()
 	{
-		component_loader::pre_destroy();
 	}
 
 	plutonium::sdk::iinterface* plugin::get_interface()

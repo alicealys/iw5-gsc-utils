@@ -1,42 +1,25 @@
 #pragma once
-#include "game/game.hpp"
 #include "entity.hpp"
-#include "array.hpp"
-#include "function.hpp"
 #include "script_value.hpp"
+
+/*
+ * Two directions:
+ *   push_value / make_array / make_object  - native code hands values to the VM
+ *   exec_ent_thread                        - native code RUNS a gsc function
+ *
+ * exec_ent_thread is what makes callbacks (addCommand) possible. The
+ * plutonium sdk has no equivalent, so it uses the raw VM symbols directly
+ * (AllocThread + VM_Execute); the sdk is only needed for the opposite
+ * direction (registering a builtin so gsc can call us).
+ */
 
 namespace scripting
 {
 	void push_value(const script_value& value);
 
-	script_value call_function(const std::string& name, const std::vector<script_value>& arguments);
-	script_value call_function(const std::string& name, const entity& entity,
-	                           const std::vector<script_value>& arguments);
-
-	template <typename T = script_value>
-	T call(const std::string& name, const std::vector<script_value>& arguments = {});
-
-	template <>
-	script_value call(const std::string& name, const std::vector<script_value>& arguments);
-
-	template <typename T>
-	T call(const std::string& name, const std::vector<script_value>& arguments)
-	{
-		return call<script_value>(name, arguments).as<T>();
-	}
-
-	script_value exec_ent_thread(const entity& entity, const char* pos, const std::vector<script_value>& arguments);
-	script_value call_script_function(const entity& entity, const std::string& filename,
-		const std::string& function, const std::vector<script_value>& arguments);
-
-	void clear_entity_fields(const entity& entity);
-	void clear_custom_fields();
-
-	void set_entity_field(const entity& entity, const std::string& field, const script_value& value);
-	script_value get_entity_field(const entity& entity, const std::string& field);
-
-	void notify(const entity& entity, const std::string& event, const std::vector<script_value>& arguments);
-
 	unsigned int make_array();
 	unsigned int make_object();
+
+	script_value exec_ent_thread(const entity& entity, const char* pos,
+		const std::vector<script_value>& arguments);
 }

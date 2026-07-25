@@ -1,5 +1,4 @@
 #pragma once
-
 #include <plutonium_sdk.hpp>
 
 namespace plugin
@@ -12,7 +11,7 @@ namespace plugin
 		std::uint32_t plugin_version() override;
 		const char* plugin_name() override;
 
-		bool is_game_supported([[maybe_unused]] plutonium::sdk::game game) override;
+		bool is_game_supported(plutonium::sdk::game game) override;
 
 		void on_startup(plutonium::sdk::iinterface* interface_ptr, plutonium::sdk::game game) override;
 		void on_shutdown() override;
@@ -23,7 +22,6 @@ namespace plugin
 	private:
 		plutonium::sdk::iinterface* interface_{};
 		plutonium::sdk::game game_{};
-
 	};
 
 	plugin* get();

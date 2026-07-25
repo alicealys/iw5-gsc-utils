@@ -1,19 +1,67 @@
 #include <stdinc.hpp>
-#include "loader/component_loader.hpp"
-
-#include "scheduler.hpp"
-#include "gsc.hpp"
+#include "component/gsc.hpp"
+#include "io.hpp"
 #include "json.hpp"
+#include "game/scripting/entity.hpp"
+#include "game/scripting/function.hpp"
+
+/*
+ * Ported from upstream iw5-gsc-utils's component/io.cpp almost verbatim - the
+ * function bodies are UNCHANGED.
+ *
+ * DROPPED: httpget - it used a risky dependency chain not needed here.
+ */
 
 namespace io
 {
-	class component final : public component_interface
+	namespace
 	{
-	public:
-		void post_unpack() override
+		/*
+		 * Best-effort: point the process CWD at the game's base folder.
+		 * Uses a SEH-guarded frame (POD-only locals) to read Dvar_FindVar safely,
+		 * preventing server crashes on failure. std::filesystem operations follow
+		 * in a separate frame to satisfy MSVC C2712.
+		 */
+		struct raw_path_result
 		{
-			const auto path = game::Dvar_FindVar("fs_basegame")->current.string;
-			std::filesystem::current_path(path);
+			bool ok;
+			char buffer[MAX_PATH];
+		};
+
+		raw_path_result read_base_path_seh()
+		{
+			raw_path_result r{ false, {} };
+
+			__try
+			{
+				const auto* dvar = game::Dvar_FindVar("fs_basegame");
+				if (dvar && dvar->current.string)
+				{
+					strncpy_s(r.buffer, dvar->current.string, sizeof(r.buffer) - 1);
+					r.ok = true;
+				}
+				return r;
+			}
+			__except (EXCEPTION_EXECUTE_HANDLER)
+			{
+				r.ok = false;
+				return r;
+			}
+		}
+
+		void set_base_path()
+		{
+			const auto result = read_base_path_seh();
+			if (result.ok)
+	{
+				std::filesystem::current_path(result.buffer);
+			}
+		}
+	}
+
+	void init()
+		{
+		set_base_path();
 
 			gsc::function::add("jsonprint", [](const gsc::function_args& args) -> scripting::script_value
 			{
@@ -112,7 +160,7 @@ namespace io
 			gsc::function::add("filesize", [](const gsc::function_args& args)
 			{
 				const auto path = args[0].as<std::string>();
-				return utils::io::file_size(path);
+			return static_cast<int>(utils::io::file_size(path));
 			});
 
 			gsc::function::add("createdirectory", [](const gsc::function_args& args)
@@ -155,28 +203,5 @@ namespace io
 
 				return scripting::script_value{};
 			});
-
-			gsc::function::add("httpget", [](const gsc::function_args& args) -> scripting::script_value
-			{
-				const auto url = args[0].as<std::string>();
-				const auto object = scripting::entity(scripting::make_object());
-
-				scheduler::once([object, url]()
-				{
-					const auto result = utils::http::get_data(url.data());
-					scheduler::once([object, result]()
-					{
-						const auto value = result.has_value()
-							? result.value().substr(0, 0x5000)
-							: "";
-						scripting::notify(object, "done", {value});
-					});
-				}, scheduler::pipeline::async);
-			
-				return object;
-			});
 		}
-	};
 }
-
-//REGISTER_COMPONENT(io::component)

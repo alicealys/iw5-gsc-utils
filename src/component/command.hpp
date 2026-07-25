@@ -8,8 +8,8 @@ namespace command
 		params();
 
 		int size() const;
-		const char* get(int index) const;
-		std::string join(int index) const;
+		const char* get(const int index) const;
+		std::string join(const int index) const;
 
 		const char* operator[](const int index) const
 		{
@@ -25,4 +25,7 @@ namespace command
 
 	void add_script_command(const std::string& name, const std::function<void(const params&)>& callback);
 	void clear_script_commands();
+
+	// Registers the gsc side (addcommand / executecommand).
+	void init();
 }

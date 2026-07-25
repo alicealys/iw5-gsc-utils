@@ -1,8 +1,15 @@
 #include <stdinc.hpp>
-#include "loader/component_loader.hpp"
+#include "component/gsc.hpp"
+#include "userinfo.hpp"
+#include "game/scripting/entity.hpp"
+#include "game/scripting/function.hpp"
 
-#include "scheduler.hpp"
-#include "gsc.hpp"
+/*
+ * Ported from upstream iw5-gsc-utils's component/userinfo.cpp almost
+ * verbatim - logic unchanged.
+ * 1. gsc::method::add now uses the SDK-based mechanism.
+ * 2. sv_getuserinfo_hook is a NEW MinHook detour address.
+ */
 
 namespace userinfo
 {
@@ -17,7 +24,7 @@ namespace userinfo
 		{
 			userinfo_map map{};
 
-			if (userinfo[0] == '\\')
+			if (!userinfo.empty() && userinfo[0] == '\\')
 			{
 				userinfo = userinfo.substr(1);
 			}
@@ -83,10 +90,7 @@ namespace userinfo
 		userinfo_overrides.clear();
 	}
 
-	class component final : public component_interface
-	{
-	public:
-		void post_unpack() override
+	void init()
 		{
 			sv_getuserinfo_hook.create(0x573E00, sv_getuserinfo_stub);
 
@@ -190,7 +194,4 @@ namespace userinfo
 				return {};
 			});
 		}
-	};
 }
-
-//REGISTER_COMPONENT(userinfo::component)

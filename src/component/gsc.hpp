@@ -1,18 +1,17 @@
 #pragma once
+#include <plutonium_sdk.hpp>
 #include "game/scripting/array.hpp"
 #include "game/scripting/execution.hpp"
 
+/*
+ * Public API is intentionally IDENTICAL to upstream iw5-gsc-utils's gsc.hpp
+ * so that component modules compile completely unchanged.
+ * Implementation routes through plutonium-sdk's official GSC interfaces
+ * instead of relying on stale hardcoded addresses and inline asm hooks.
+ */
+
 namespace gsc
 {
-	enum classid
-	{
-		entity,
-		hudelem,
-		pathnode,
-		node,
-		count
-	};
-
 	class function_args
 	{
 	public:
@@ -30,9 +29,6 @@ namespace gsc
 		std::vector<scripting::script_value> values_;
 	};
 
-	using builtin_function = void(*)();
-	using builtin_method = void(*)(game::scr_entref_t);
-
 	using script_function = std::function<scripting::script_value(const function_args&)>;
 	using script_method = std::function<scripting::script_value(const game::scr_entref_t, const function_args&)>;
 
@@ -46,10 +42,10 @@ namespace gsc
 		void add(const std::string& name, const script_method& func);
 	}
 
-	namespace field
-	{
-		void add(const classid classnum, const std::string& name,
-			const std::function<scripting::script_value(unsigned int entnum)>& getter,
-			const std::function<void(unsigned int entnum, const scripting::script_value&)>& setter);
-	}
+	// Call this once from plugin::on_startup with the SDK interface pointer,
+	// before any function::add/method::add calls.
+	void init(plutonium::sdk::iinterface* interface_ptr);
+
+	// Routes to the SDK logger; safe to call before init (no-op then).
+	void log(const std::string& msg);
 }

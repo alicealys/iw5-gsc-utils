@@ -1,323 +1,28 @@
 #include <stdinc.hpp>
-#include "loader/component_loader.hpp"
-#include "scheduler.hpp"
-#include "scripting.hpp"
-#include "command.hpp"
-
-#include "game/scripting/event.hpp"
-#include "game/scripting/execution.hpp"
-#include "game/scripting/functions.hpp"
-#include "game/scripting/array.hpp"
-#include "game/scripting/function.hpp"
-
+#include <plutonium_sdk.hpp>
 #include "gsc.hpp"
+
+/*
+ * See gsc.hpp for the overview. Implementation notes:
+ *
+ * 1. THUNK TABLES: Adapts context-free C callbacks to a registry of distinct
+ *    handlers using compile-time-generated free functions.
+ *
+ * 2. SEH SAFETY NET: Guarded memory access lives in tiny functions with ONLY
+ *    POD locals. String/vector/exception building happens in the calling frame.
+ *    This prevents server crashes on bad memory access.
+ */
 
 namespace gsc
 {
-	std::unordered_map<unsigned, script_function> functions;
-	std::unordered_map<unsigned, script_method> methods;
-
-	namespace
-	{
-		std::string method_name(unsigned int id)
-		{
-			const auto& map = (*game::plutonium::gsc_ctx)->meth_map();
-
-			for (const auto& function : map)
-			{
-				if (function.second == id)
-				{
-					return function.first.data();
-				}
-			}
-
-			return {};
-		}
-
-		std::string function_name(unsigned int id)
-		{
-			const auto& map = (*game::plutonium::gsc_ctx)->func_map();
-
-			for (const auto& function : map)
-			{
-				if (function.second == id)
-				{
-					return function.first.data();
-				}
-			}
-
-			return {};
-		}
-
-		function_args get_arguments()
-		{
-			std::vector<scripting::script_value> args;
-
-			for (auto i = 0; i < game::scr_VmPub->outparamcount; i++)
-			{
-				const auto value = game::scr_VmPub->top[-i];
-				args.push_back(value);
-			}
-
-			return args;
-		}
-
-		void return_value(const scripting::script_value& value)
-		{
-			if (game::scr_VmPub->outparamcount)
-			{
-				game::Scr_ClearOutParams();
-			}
-
-			scripting::push_value(value);
-		}
-
-		auto function_map_start = 0x200;
-		auto method_map_start = 0x8400;
-		auto token_map_start = 0x8000;
-		auto field_offset_start = 0xA000;
-
-		struct entity_field
-		{
-			std::string name;
-			std::function<scripting::script_value(unsigned int entnum)> getter;
-			std::function<void(unsigned int entnum, scripting::script_value)> setter;
-		};
-
-		std::vector<std::function<void()>> post_load_callbacks;
-		std::unordered_map<unsigned int, std::unordered_map<unsigned int, entity_field>> custom_fields;
-
-		void call_function(unsigned int id)
-		{
-			if (id < 0x200)
-			{
-				return reinterpret_cast<builtin_function*>(game::plutonium::function_table.get())[id]();
-			}
-
-			try
-			{
-				const auto result = functions[id](get_arguments());
-				const auto type = result.get_raw().type;
-
-				if (type)
-				{
-					return_value(result);
-				}
-			}
-			catch (const std::exception& e)
-			{
-				printf("************** Script execution error **************\n");
-				printf("Error executing function %s:\n", function_name(id).data());
-				printf("    %s\n", e.what());
-				printf("****************************************************\n");
-			}
-		}
-
-		void call_method(game::scr_entref_t ent, unsigned int id)
-		{
-			if (id < 0x8400)
-			{
-				return reinterpret_cast<builtin_method*>(game::plutonium::method_table.get())[id - 0x8000](ent);
-			}
-
-			try
-			{
-				const auto result = methods[id](ent, get_arguments());
-				const auto type = result.get_raw().type;
-
-				if (type)
-				{
-					return_value(result);
-				}
-			}
-			catch (const std::exception& e)
-			{
-				printf("************** Script execution error **************\n");
-				printf("Error executing method %s:\n", method_name(id).data());
-				printf("    %s\n", e.what());
-				printf("****************************************************\n");
-			}
-		}
-
-		__declspec(naked) void call_builtin_stub()
-		{
-			__asm
-			{
-				push eax
-
-				mov eax, 0x20B4A5C
-				mov [eax], esi
-
-				mov eax, 0x20B4A90
-				mov [eax], edx
-
-				pop eax
-
-				pushad
-				push eax
-				call call_function
-				pop eax
-				popad
-
-				push 0x56C900
-				retn
-			}
-		}
-
-		__declspec(naked) void call_builtin_method_stub()
-		{
-			__asm
-			{
-				pushad
-				push ecx
-				push ebx
-				call call_method
-				pop ebx
-				pop ecx
-				popad
-
-				push ebx
-				add esp, 0xC
-
-				push 0x56CBE9
-				retn
-			}
-		}
-
-		utils::hook::detour scr_get_object_field_hook;
-		void scr_get_object_field_stub(unsigned int classnum, int entnum, unsigned int offset)
-		{
-			if (custom_fields[classnum].find(offset) == custom_fields[classnum].end())
-			{
-				return scr_get_object_field_hook.invoke<void>(classnum, entnum, offset);
-			}
-
-			const auto& field = custom_fields[classnum][offset];
-
-			try
-			{
-				const auto result = field.getter(entnum);
-				return_value(result);
-			}
-			catch (const std::exception& e)
-			{
-				printf("************** Script execution error **************\n");
-				printf("Error getting field %s:\n", field.name.data());
-				printf("    %s\n", e.what());
-				printf("****************************************************\n");
-			}
-		}
-
-		utils::hook::detour scr_set_object_field_hook;
-		void scr_set_object_field_stub(unsigned int classnum, int entnum, unsigned int offset)
-		{
-			if (custom_fields[classnum].find(offset) == custom_fields[classnum].end())
-			{
-				return scr_set_object_field_hook.invoke<void>(classnum, entnum, offset);
-			}
-
-			const auto args = get_arguments();
-			const auto& field = custom_fields[classnum][offset];
-
-			try
-			{
-				field.setter(entnum, args[0]);
-			}
-			catch (const std::exception& e)
-			{
-				printf("************** Script execution error **************\n");
-				printf("Error setting field %s:\n", field.name.data());
-				printf("    %s\n", e.what());
-				printf("****************************************************\n");
-			}
-		}
-
-		utils::hook::detour scr_post_load_scripts_hook;
-		void scr_post_load_scripts_stub()
-		{
-			for (const auto& callback : post_load_callbacks)
-			{
-				callback();
-			}
-
-			return scr_post_load_scripts_hook.invoke<void>();
-		}
-	}
-
-	namespace function
-	{
-		void add(const std::string& name, const script_function& func)
-		{
-			auto index = 0u;
-			auto& ctx = (*game::plutonium::gsc_ctx);
-			
-			if (ctx->func_exists(name))
-			{
-				printf("[iw5-gsc-utils] Warning: function '%s' already defined\n", name.data());
-				index = ctx->func_id(name);
-			}
-			else
-			{
-				index = function_map_start++;
-				ctx->func_add(name, index);
-			}
-
-			functions.insert(std::make_pair(index, func));
-		}
-	}
-
-	namespace method
-	{
-		void add(const std::string& name, const script_method& func)
-		{
-			if (true)
-			{
-				return;
-			}
-
-			auto index = 0u;
-			auto& ctx = (*game::plutonium::gsc_ctx);
-
-			if (ctx->meth_exists(name))
-			{
-				printf("[iw5-gsc-utils] Warning: method '%s' already defined\n", name.data());
-				index = ctx->meth_id(name);
-			}
-			else
-			{
-				index = method_map_start++;
-				ctx->meth_add(name, index);
-			}
-
-			methods.insert(std::make_pair(index, func));
-		}
-	}
-
-	namespace field
-	{
-		void add(const classid classnum, const std::string& name,
-			const std::function<scripting::script_value(unsigned int entnum)>& getter,
-			const std::function<void(unsigned int entnum, const scripting::script_value&)>& setter)
-		{
-			const auto offset = field_offset_start++;
-			custom_fields[classnum][offset] = {name, getter, setter};
-
-			post_load_callbacks.push_back([=]()
-			{
-				const auto name_str = game::SL_GetString(name.data(), 0);
-				game::Scr_AddClassField(classnum, name_str, game::SL_GetCanonicalString(name.data()), offset);
-			});
-		}
-	}
-
 	function_args::function_args(std::vector<scripting::script_value> values)
-		: values_(values)
+		: values_(std::move(values))
 	{
 	}
 
 	unsigned int function_args::size() const
 	{
-		return this->values_.size();
+		return static_cast<unsigned int>(this->values_.size());
 	}
 
 	std::vector<scripting::script_value> function_args::get_raw() const
@@ -327,7 +32,7 @@ namespace gsc
 
 	scripting::value_wrap function_args::get(const int index) const
 	{
-		if (index >= this->values_.size())
+		if (static_cast<size_t>(index) >= this->values_.size())
 		{
 			throw std::runtime_error(utils::string::va("parameter %d does not exist", index));
 		}
@@ -335,172 +40,279 @@ namespace gsc
 		return {this->values_[index], index};
 	}
 
-	class component final : public component_interface
+	namespace
 	{
-	public:
-		void post_unpack() override
+		plutonium::sdk::iinterface* g_interface = nullptr;
+
+		// ── SEH boundary (POD-only frame) ───────────────────────────────────
+
+		enum class call_status
 		{
-			scr_get_object_field_hook.create(0x52BDB0, scr_get_object_field_stub);
-			scr_set_object_field_hook.create(0x52BCC0, scr_set_object_field_stub);
-			scr_post_load_scripts_hook.create(0x628B50, scr_post_load_scripts_stub);
+			ok,
+			access_violation,
+		};
 
-			field::add(classid::entity, "entityflags",
-				[](unsigned int entnum) -> scripting::script_value
-				{
-					const auto entity = &game::g_entities[entnum];
-					return entity->flags;
-				},
-				[](unsigned int entnum, const scripting::script_value& value)
-				{
-					const auto entity = &game::g_entities[entnum];
-					entity->flags = value.as<int>();
-				}
-			);
-
-			field::add(classid::entity, "clientflags",
-				[](unsigned int entnum) -> scripting::script_value
-				{
-					const auto entity = &game::g_entities[entnum];
-					return entity->client->flags;
-				},
-				[](unsigned int entnum, const scripting::script_value& value)
-				{
-					const auto entity = &game::g_entities[entnum];
-					entity->client->flags = value.as<int>();
-				}
-			);
-
-			function::add("executecommand", [](const function_args& args) -> scripting::script_value
+		// `body` is a reference parameter (no local destructor obligation for
+		// THIS frame), and the only local is a plain enum - satisfies MSVC's
+		// C2712 requirement that a __try-containing function do no object
+		// unwinding of its own.
+		call_status invoke_guarded(const std::function<void()>& body)
+		{
+			__try
 			{
-				game::Cbuf_AddText(0, args[0].as<const char*>());
-				return {};
-			});
-
-			function::add("addcommand", [](const function_args& args) -> scripting::script_value
+				body();
+				return call_status::ok;
+			}
+			__except (EXCEPTION_EXECUTE_HANDLER)
 			{
-				const auto name = args[0].as<std::string>();
-				const auto function = args[1].as<scripting::function>();
-				command::add_script_command(name, [function](const command::params& params)
-				{
-					scripting::array array;
-					for (auto i = 0; i < params.size(); i++)
-					{
-						array.push(params[i]);
-					}
-
-					function({array.get_raw()});
-				});
-
-				return {};
-			});
-
-			function::add("say", [](const function_args& args) -> scripting::script_value
-			{
-				const auto message = args[0].as<std::string>();
-				game::SV_GameSendServerCommand(-1, 0, utils::string::va("%c \"%s\"", 84, message.data()));
-
-				return {};
-			});
-
-			function::add("dropallbots", [](const function_args&) -> scripting::script_value
-			{
-				for (auto i = 0; i < *game::svs_clientCount; i++)
-				{
-					if (game::svs_clients[i].header.state != game::CS_FREE
-						&& game::svs_clients[i].header.netchan.remoteAddress.type == game::NA_BOT)
-					{
-						game::SV_GameDropClient(i, "GAME_GET_TO_COVER");
-					}
-				}
-
-				return {};
-			});
-
-			method::add("tell", [](const game::scr_entref_t ent, const function_args& args) -> scripting::script_value
-			{
-				if (ent.classnum != 0)
-				{
-					throw std::runtime_error("Invalid entity");
-				}
-
-				const auto client = ent.entnum;
-
-				if (game::g_entities[client].client == nullptr)
-				{
-					throw std::runtime_error("Not a player entity");
-				}
-
-				const auto message = args[0].as<std::string>();
-				game::SV_GameSendServerCommand(client, 0, utils::string::va("%c \"%s\"", 84, message.data()));
-
-				return {};
-			});
-
-			method::add("specialtymarathon", [](const game::scr_entref_t ent, const function_args& args) -> scripting::script_value
-			{
-				if (ent.classnum != 0)
-				{
-					throw std::runtime_error("Invalid entity");
-				}
-
-				const auto client = ent.entnum;
-
-				if (game::g_entities[client].client == nullptr)
-				{
-					throw std::runtime_error("Not a player entity");
-				}
-
-				const auto toggle = args[0].as<int>();
-				auto flags = game::g_entities[client].client->ps.perks[0];
-
-				game::g_entities[client].client->ps.perks[0] = toggle
-					? flags | 0x4000u : flags & ~0x4000u;
-
-				return {};
-			});
-
-			method::add("isbot", [](const game::scr_entref_t ent, const function_args&) -> scripting::script_value
-			{
-				if (ent.classnum != 0)
-				{
-					throw std::runtime_error("Invalid entity");
-				}
-
-				const auto client = ent.entnum;
-
-				if (game::g_entities[client].client == nullptr)
-				{
-					throw std::runtime_error("Not a player entity");
-				}
-
-				return game::svs_clients[client].bIsTestClient;
-			});
-
-			method::add("arecontrolsfrozen", [](const game::scr_entref_t ent, const function_args&) -> scripting::script_value
-			{
-				if (ent.classnum != 0)
-				{
-					throw std::runtime_error("Invalid entity");
-				}
-
-				const auto client = ent.entnum;
-
-				if (game::g_entities[client].client == nullptr)
-				{
-					throw std::runtime_error("Not a player entity");
-				}
-
-				return {(game::g_entities[client].client->flags & 4) != 0};
-			});
-
-			// let other plugins read the pointers
-			post_load_callbacks.push_back([]()
-			{
-				utils::hook::jump(0x56C8EB, call_builtin_stub);
-				utils::hook::jump(0x56CBDC, call_builtin_method_stub);
-			});
+				return call_status::access_violation;
+			}
 		}
-	};
-}
 
-REGISTER_COMPONENT(gsc::component)
+		// ── Argument reading (scr_VmPub) ─────────────────────────────────────
+
+		constexpr unsigned int MAX_READABLE_ARGS = 32;
+
+		function_args read_arguments(const std::string& name)
+		{
+			std::vector<scripting::script_value> args;
+			bool crashed = false;
+			bool suspicious = false;
+			unsigned int observed_count = 0;
+
+			const auto status = invoke_guarded([&]()
+			{
+				auto* pub = game::scr_VmPub.get();
+				observed_count = pub->outparamcount;
+
+				if (pub->outparamcount == 0 || pub->outparamcount > MAX_READABLE_ARGS)
+				{
+					suspicious = (pub->outparamcount > MAX_READABLE_ARGS);
+					return;
+				}
+
+				for (unsigned int i = 0; i < pub->outparamcount; i++)
+				{
+					args.emplace_back(pub->top[-static_cast<int>(i)]);
+				}
+			});
+
+			if (status == call_status::access_violation)
+			{
+				log("[iw5-gsc-utils] '" + name + "': ACCESS VIOLATION reading scr_VmPub arguments -- "
+					"0x20B4A80 is likely wrong for this build (caught -- server did NOT crash)");
+				return function_args({});
+			}
+
+			if (suspicious)
+			{
+				log("[iw5-gsc-utils] '" + name + "': suspicious outparamcount=" + std::to_string(observed_count) +
+					" -- scr_VmPub address/timing may be wrong for this build");
+			}
+
+			return function_args(std::move(args));
+		}
+
+		// ── Return value pushing ─────────────────────────────────────────────
+
+		void return_value(const std::string& name, const scripting::script_value& value)
+		{
+			const auto raw = value.get_raw(); // no game-memory access, safe outside SEH
+
+			const auto status = invoke_guarded([&]()
+			{
+				if (game::scr_VmPub->outparamcount)
+				{
+					game::Scr_ClearOutParams();
+				}
+
+				scripting::push_value(raw);
+			});
+
+			if (status == call_status::access_violation)
+			{
+				log("[iw5-gsc-utils] '" + name + "': ACCESS VIOLATION pushing return value -- "
+					"Scr_ClearOutParams/AddRefToValue/scr_VmPub may be wrong for this build (caught -- server did NOT crash)");
+			}
+		}
+
+		// ── Registries ────────────────────────────────────────────────────────
+
+		struct registered_function
+		{
+			std::string name;
+			script_function func;
+		};
+
+		struct registered_method
+		{
+			std::string name;
+			script_method func;
+		};
+
+		std::vector<registered_function> g_functions;
+		std::vector<registered_method> g_methods;
+
+		void invoke_function(size_t index)
+		{
+			const auto& entry = g_functions[index];
+
+			const auto args = read_arguments(entry.name);
+
+			scripting::script_value result;
+			bool threw = false;
+			std::string error_message;
+
+			const auto status = invoke_guarded([&]()
+			{
+				try
+				{
+					result = entry.func(args);
+				}
+				catch (const std::exception& e)
+				{
+					threw = true;
+					error_message = e.what();
+				}
+			});
+
+			if (status == call_status::access_violation)
+			{
+				log("[iw5-gsc-utils] '" + entry.name + "': ACCESS VIOLATION during execution (caught -- server did NOT crash)");
+				return;
+			}
+
+			if (threw)
+			{
+				log("[iw5-gsc-utils] '" + entry.name + "': " + error_message);
+				return;
+			}
+
+			return_value(entry.name, result);
+		}
+
+		void invoke_method(size_t index, plutonium::sdk::types::entref entref)
+		{
+			const auto& entry = g_methods[index];
+
+			const game::scr_entref_t ent{entref.entnum, entref.classnum};
+			const auto args = read_arguments(entry.name);
+
+			scripting::script_value result;
+			bool threw = false;
+			std::string error_message;
+
+			const auto status = invoke_guarded([&]()
+			{
+				try
+				{
+					result = entry.func(ent, args);
+				}
+				catch (const std::exception& e)
+				{
+					threw = true;
+					error_message = e.what();
+				}
+			});
+
+			if (status == call_status::access_violation)
+			{
+				log("[iw5-gsc-utils] '" + entry.name + "': ACCESS VIOLATION during execution (caught -- server did NOT crash)");
+				return;
+			}
+
+			if (threw)
+			{
+				log("[iw5-gsc-utils] '" + entry.name + "': " + error_message);
+				return;
+			}
+
+			return_value(entry.name, result);
+		}
+
+		// ── Thunk tables ──────────────────────────────────────────────────────
+		// plutonium-sdk's callbacks are context-free, so we generate one real
+		// function per registration slot at compile time.
+
+		constexpr size_t MAX_FUNCTIONS = 256;
+		constexpr size_t MAX_METHODS = 256;
+
+		template <size_t I>
+		void PLUTONIUM_CALLBACK function_thunk()
+		{
+			invoke_function(I);
+		}
+
+		template <size_t I>
+		void PLUTONIUM_CALLBACK method_thunk(plutonium::sdk::types::entref entref)
+		{
+			invoke_method(I, entref);
+		}
+
+		template <size_t... Is>
+		constexpr auto make_function_thunks(std::index_sequence<Is...>)
+		{
+			return std::array<plutonium::sdk::interfaces::gsc::function_callback, sizeof...(Is)>{ &function_thunk<Is>... };
+		}
+
+		template <size_t... Is>
+		constexpr auto make_method_thunks(std::index_sequence<Is...>)
+		{
+			return std::array<plutonium::sdk::interfaces::gsc::method_callback, sizeof...(Is)>{ &method_thunk<Is>... };
+		}
+
+		const auto function_thunks = make_function_thunks(std::make_index_sequence<MAX_FUNCTIONS>{});
+		const auto method_thunks = make_method_thunks(std::make_index_sequence<MAX_METHODS>{});
+	}
+
+	void init(plutonium::sdk::iinterface* interface_ptr)
+	{
+		g_interface = interface_ptr;
+	}
+
+	void log(const std::string& msg)
+	{
+		// Forwards to the internal helper so other components can report
+		// errors through the same SDK logger.
+		if (g_interface)
+		{
+			g_interface->logging()->info(msg.c_str());
+		}
+	}
+
+	namespace function
+	{
+		void add(const std::string& name, const script_function& func)
+		{
+			if (g_functions.size() >= MAX_FUNCTIONS)
+			{
+				log("[iw5-gsc-utils] cannot register '" + name + "': MAX_FUNCTIONS (" +
+					std::to_string(MAX_FUNCTIONS) + ") reached");
+				return;
+			}
+
+			const auto index = g_functions.size();
+			g_functions.push_back({name, func});
+
+			g_interface->gsc()->register_function(name, function_thunks[index]);
+		}
+	}
+
+	namespace method
+	{
+		void add(const std::string& name, const script_method& func)
+		{
+			if (g_methods.size() >= MAX_METHODS)
+			{
+				log("[iw5-gsc-utils] cannot register method '" + name + "': MAX_METHODS (" +
+					std::to_string(MAX_METHODS) + ") reached");
+				return;
+			}
+
+			const auto index = g_methods.size();
+			g_methods.push_back({name, func});
+
+			g_interface->gsc()->register_method(name, method_thunks[index]);
+		}
+	}
+}

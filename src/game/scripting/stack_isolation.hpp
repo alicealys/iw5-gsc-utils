@@ -1,6 +1,12 @@
 #pragma once
 #include "game/game.hpp"
 
+/*
+ * Swaps scr_VmPub's stack for a private one while native code pushes
+ * arguments and runs a GSC thread, then restores it. Without this, running a
+ * script thread from inside a builtin clobbers the caller's VM stack.
+ */
+
 namespace scripting
 {
 	class stack_isolation final
