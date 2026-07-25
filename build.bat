@@ -40,7 +40,11 @@ cl.exe %CPPFLAGS% "%ROOT%\src\game\scripting\script_value.cpp" /Fo:"%OBJDIR%\scr
 if errorlevel 1 set FAIL=1
 cl.exe %CPPFLAGS% "%ROOT%\src\game\scripting\execution.cpp" /Fo:"%OBJDIR%\scripting_execution.obj"
 if errorlevel 1 set FAIL=1
-cl.exe %CPPFLAGS% "%ROOT%\src\gsc\dispatch.cpp" /Fo:"%OBJDIR%\gsc_dispatch.obj"
+cl.exe %CPPFLAGS% "%ROOT%\src\game\scripting\stack_isolation.cpp" /Fo:"%OBJDIR%\scripting_stack_isolation.obj"
+if errorlevel 1 set FAIL=1
+cl.exe %CPPFLAGS% "%ROOT%\src\component\command.cpp" /Fo:"%OBJDIR%\component_command.obj"
+if errorlevel 1 set FAIL=1
+cl.exe %CPPFLAGS% "%ROOT%\src\component\gsc.cpp" /Fo:"%OBJDIR%\component_gsc.obj"
 if errorlevel 1 set FAIL=1
 cl.exe %CPPFLAGS% "%ROOT%\src\component\io.cpp" /Fo:"%OBJDIR%\component_io.obj"
 if errorlevel 1 set FAIL=1
@@ -70,6 +74,6 @@ if %FAIL% NEQ 0 (
 )
 
 echo === All objects compiled OK, linking ===
-cl.exe /nologo /LD "%OBJDIR%\stdinc.obj" "%OBJDIR%\utils_memory.obj" "%OBJDIR%\utils_string.obj" "%OBJDIR%\utils_hook.obj" "%OBJDIR%\utils_io.obj" "%OBJDIR%\scripting_variable_value.obj" "%OBJDIR%\scripting_vector.obj" "%OBJDIR%\scripting_entity.obj" "%OBJDIR%\scripting_array.obj" "%OBJDIR%\scripting_function.obj" "%OBJDIR%\scripting_script_value.obj" "%OBJDIR%\scripting_execution.obj" "%OBJDIR%\gsc_dispatch.obj" "%OBJDIR%\component_io.obj" "%OBJDIR%\component_json.obj" "%OBJDIR%\component_userinfo.obj" "%OBJDIR%\plugin.obj" "%OBJDIR%\dllmain.obj" "%OBJDIR%\mh_buffer.obj" "%OBJDIR%\mh_hook.obj" "%OBJDIR%\mh_trampoline.obj" "%OBJDIR%\mh_hde32.obj" "%OBJDIR%\mh_hde64.obj" /Fe:"%ROOT%\build\iw5-gsc-utils.dll" /link /MACHINE:X86
+cl.exe /nologo /LD "%OBJDIR%\stdinc.obj" "%OBJDIR%\utils_memory.obj" "%OBJDIR%\utils_string.obj" "%OBJDIR%\utils_hook.obj" "%OBJDIR%\utils_io.obj" "%OBJDIR%\scripting_variable_value.obj" "%OBJDIR%\scripting_vector.obj" "%OBJDIR%\scripting_entity.obj" "%OBJDIR%\scripting_array.obj" "%OBJDIR%\scripting_function.obj" "%OBJDIR%\scripting_script_value.obj" "%OBJDIR%\scripting_execution.obj" "%OBJDIR%\scripting_stack_isolation.obj" "%OBJDIR%\component_command.obj" "%OBJDIR%\component_gsc.obj" "%OBJDIR%\component_io.obj" "%OBJDIR%\component_json.obj" "%OBJDIR%\component_userinfo.obj" "%OBJDIR%\plugin.obj" "%OBJDIR%\dllmain.obj" "%OBJDIR%\mh_buffer.obj" "%OBJDIR%\mh_hook.obj" "%OBJDIR%\mh_trampoline.obj" "%OBJDIR%\mh_hde32.obj" "%OBJDIR%\mh_hde64.obj" /Fe:"%ROOT%\build\iw5-gsc-utils.dll" /link /MACHINE:X86
 
 exit /b %ERRORLEVEL%

@@ -23,7 +23,7 @@ namespace utils::io
 		}
 
 		std::ofstream stream(
-			file, std::ios::binary | std::ofstream::out | (append ? std::ofstream::app : 0));
+			file, std::ios::binary | std::ofstream::out | (append ? std::ofstream::app : std::ofstream::openmode(0)));
 
 		if (stream.is_open())
 		{

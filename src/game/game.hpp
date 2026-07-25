@@ -34,8 +34,6 @@ namespace game
 	private:
 		T* dedi_;
 	};
-
-	void SV_GameDropClient(int clientNum, const char* reason);
 }
 
 #include "symbols.hpp"

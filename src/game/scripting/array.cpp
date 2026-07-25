@@ -1,5 +1,7 @@
 #include <stdinc.hpp>
 #include "array.hpp"
+#include "entity.hpp"
+#include "function.hpp"
 #include "script_value.hpp"
 #include "execution.hpp"
 

@@ -157,10 +157,6 @@ namespace game
 		int function_count;
 		function_frame_t* function_frame;
 		VariableValue* top;
-		/*bool debugCode;
-		bool abort_on_error;
-		bool terminal_error;
-		bool block_execution;*/
 		unsigned int inparamcount;
 		unsigned int outparamcount;
 		unsigned int breakpointOutparamcount;
