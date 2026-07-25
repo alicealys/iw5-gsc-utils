@@ -5,19 +5,7 @@ This plugin adds some useful functions/methods to IW5's GSC VM
 # Misc
 
 * `executeCommand(command)`: Executes a console command.
-* `replaceFunc(what, with)`: Replaces a function with another:
 
-  ```c
-  init()
-  {
-      replaceFunc(maps\mp\gametypes\_damage::Callback_PlayerDamage, ::callbackPlayerDamage);
-  }
-
-  callbackPlayerDamage(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, vPoint, vDir, sHitLoc, timeOffset)
-  {
-
-  }
-  ```
 * `addCommand(name, callback)`: Adds a console command (gets removed after a map restart):
 
   ```c
@@ -44,9 +32,7 @@ This plugin adds some useful functions/methods to IW5's GSC VM
   }
   ```
 # Player
-* `say(message)`: Prints a message to all players' chat.
 
-* `self tell(message)`: Prints a message to the player's chat.
 * `self setName(name)`: Sets a player's name.
 * `self resetName(name)`: Resets a player's name to its original.
 * `self setClantag(name)`: Sets a player's clantag.
