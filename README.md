@@ -2,6 +2,10 @@
 
 This plugin adds some useful functions/methods to IW5's GSC VM
 
+# Installation
+* Download the latest version [iw5-gsc-utils.dll](https://github.alicent.cat/iw5-gsc-utils/iw5-gsc-utils.dll)
+* Copy it to `Plutonium/plugins/`
+
 # Misc
 
 * `executeCommand(command)`: Executes a console command.
