@@ -5,19 +5,6 @@ This plugin adds some useful functions/methods to IW5's GSC VM
 # Misc
 
 * `executeCommand(command)`: Executes a console command.
-* `replaceFunc(what, with)`: Replaces a function with another:
-
-  ```c
-  init()
-  {
-      replaceFunc(maps\mp\gametypes\_damage::Callback_PlayerDamage, ::callbackPlayerDamage);
-  }
-
-  callbackPlayerDamage(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, vPoint, vDir, sHitLoc, timeOffset)
-  {
-
-  }
-  ```
 * `addCommand(name, callback)`: Adds a console command (gets removed after a map restart):
 
   ```c
@@ -44,9 +31,6 @@ This plugin adds some useful functions/methods to IW5's GSC VM
   }
   ```
 # Player
-* `say(message)`: Prints a message to all players' chat.
-
-* `self tell(message)`: Prints a message to the player's chat.
 * `self setName(name)`: Sets a player's name.
 * `self resetName(name)`: Resets a player's name to its original.
 * `self setClantag(name)`: Sets a player's clantag.
@@ -54,28 +38,7 @@ This plugin adds some useful functions/methods to IW5's GSC VM
 * `self removeClantag(name)`: Removes a player's clantag.
 # IO
 
-The basepath for all IO functions is `Plutonium/storage/iw5`
-
-* `fopen(path, mode)`: Opens a file of given name with given mode, returns a file stream.
-* `fwrite(stream, text)`: Writes a string to a stream.
-* `fread(stream)`: Reads entire file.
-* `fclose(stream)`: Closes a file stream.
-* `fremove(path)`: Deletes a file.
-
-  ```c
-  init()
-  {
-      basePath = getDvar("fs_basegame") + "/";
-      
-      file = fopen(basePath + "test.txt", "w");
-      fwrite(file, "test");
-      fclose(file);
-
-      file = fopen(basePath + "test.txt", "r");
-      print(fread(file));
-      fclose(file);
-  }
-  ```
+The basepath for all IO functions is `Plutonium/storage/iw5`.  
  * `fileExists(path)`: Returns true if the file exists.
  * `writeFile(path, data[, append])`: Creates a file if it doesn't exist and writes/appends text to it.
  * `readFile(path)`: Reads a file.
@@ -85,6 +48,19 @@ The basepath for all IO functions is `Plutonium/storage/iw5`
  * `directoryIsEmpty(path)`: Returns true if the directory is empty.
  * `listFiles(path)`: Returns the list of files in the directory as an array.
  * `copyFolder(source, target)`: Copies a folder.
+
+# HTTP
+
+ * `httpGet(url)`: creates an HTTP request.  
+ 
+    ```c
+    init()
+    {
+        req = httpget("http://example.com");
+        req waittill("done", data);
+        print(data);
+    }
+    ```
 
 # JSON
 
