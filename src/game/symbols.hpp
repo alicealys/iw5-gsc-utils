@@ -25,8 +25,6 @@ namespace game
 
 	WEAK symbol<const dvar_t*(const char*)> Dvar_FindVar{0x5BDCC0};
 
-	WEAK symbol<char*(const char*)> I_CleanStr{0x0};
-
 	WEAK symbol<VariableValue(unsigned int classnum, int entnum, int offset)> GetEntityFieldValue{0x56AF20};
 	WEAK symbol<unsigned int(unsigned int parentId, unsigned int name)> FindVariable{0x5651F0};
 	WEAK symbol<unsigned int(unsigned int parentId, unsigned int name)> FindObject{0x565BD0};

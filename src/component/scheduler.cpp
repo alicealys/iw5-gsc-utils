@@ -77,6 +77,7 @@ namespace scheduler
 		};
 
 		std::thread thread;
+		std::atomic_bool killed;
 		task_pipeline pipelines[pipeline::count];
 
 		void execute(const pipeline type)
@@ -132,7 +133,7 @@ namespace scheduler
 		{
 			thread = std::thread([]()
 			{
-				while (true)
+				while (!killed)
 				{
 					execute(pipeline::async);
 					std::this_thread::sleep_for(10ms);
@@ -140,6 +141,16 @@ namespace scheduler
 			});
 
 			utils::hook::call(0x50CEDC, server_frame_stub);
+		}
+
+		void on_shutdown([[maybe_unused]] plugin::plugin* plugin) override
+		{
+			killed = true;
+
+			if (thread.joinable())
+			{
+				thread.join();
+			}
 		}
 	};
 }
