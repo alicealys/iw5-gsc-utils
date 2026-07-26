@@ -4,48 +4,6 @@
 
 namespace utils::hook
 {
-	// open-iw5
-
-	void signature::process()
-	{
-		if (this->signatures_.empty()) return;
-
-		const auto start = static_cast<char*>(this->start_);
-
-		const unsigned int sig_count = this->signatures_.size();
-		const auto containers = this->signatures_.data();
-
-		for (size_t i = 0; i < this->length_; ++i)
-		{
-			const auto address = start + i;
-
-			for (unsigned int k = 0; k < sig_count; ++k)
-			{
-				const auto container = &containers[k];
-
-				unsigned int j;
-				for (j = 0; j < static_cast<unsigned int>(container->mask.size()); ++j)
-				{
-					if (container->mask[j] != '?' && container->signature[j] != address[j])
-					{
-						break;
-					}
-				}
-
-				if (j == container->mask.size())
-				{
-					container->callback(address);
-				}
-			}
-		}
-	}
-
-	void signature::add(const container& container)
-	{
-		signatures_.push_back(container);
-	}
-
-
 	namespace
 	{
 		[[maybe_unused]] class _
@@ -218,5 +176,18 @@ namespace utils::hook
 		set(address, bytes, 5);
 
 		delete[] bytes;
+	}
+
+	DWORD unprotect(void* place, const size_t size)
+	{
+		DWORD old_protect{};
+		VirtualProtect(place, size, PAGE_EXECUTE_READWRITE, &old_protect);
+		return old_protect;
+	}
+
+	void protect(void* place, const size_t size, DWORD old_protect)
+	{
+		VirtualProtect(place, size, old_protect, &old_protect);
+		FlushInstructionCache(GetCurrentProcess(), place, size);
 	}
 }

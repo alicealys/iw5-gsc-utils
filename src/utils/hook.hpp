@@ -4,37 +4,6 @@
 
 namespace utils::hook
 {
-	class signature final
-	{
-	public:
-		struct container final
-		{
-			std::string signature;
-			std::string mask;
-			std::function<void(char*)> callback;
-		};
-
-		signature(void* start, const size_t length) : start_(start), length_(length)
-		{
-		}
-
-		signature(const DWORD start, const size_t length) : signature(reinterpret_cast<void*>(start), length)
-		{
-		}
-
-		signature() : signature(0x400000, 0x800000)
-		{
-		}
-
-		void process();
-		void add(const container& container);
-
-	private:
-		void* start_;
-		size_t length_;
-		std::vector<container> signatures_;
-	};
-
 	class detour
 	{
 	public:
@@ -144,4 +113,7 @@ namespace utils::hook
 	{
 		return static_cast<T(*)(Args ...)>(func)(args...);
 	}
+
+	DWORD unprotect(void* place, const size_t size);
+	void protect(void* place, const size_t size, DWORD old_protect);
 }

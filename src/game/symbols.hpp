@@ -83,11 +83,4 @@ namespace game
 	WEAK symbol<dvar_t> sv_maxclients{0x1BA0E4C};
 	WEAK symbol<int> svs_clientCount{0x4B5CF8C};
 	WEAK symbol<client_s> svs_clients{0x4B5CF90};
-
-	namespace plutonium
-	{
-		WEAK symbol<std::unique_ptr<xsk::gsc::iw5_pc::context>> gsc_ctx{0};
-		WEAK symbol<void*> function_table{0};
-		WEAK symbol<void*> method_table{0};
-	}
 }

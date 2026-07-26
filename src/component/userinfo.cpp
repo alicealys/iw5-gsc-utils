@@ -71,11 +71,11 @@ namespace userinfo
 			const auto userinfo = map_to_userinfo(map);
 			strcpy_s(buffer, 1024, userinfo.data());
 		}
-	}
 
-	void clear_client_overrides(int client)
-	{
-		userinfo_overrides[client].clear();
+		void clear_client_overrides(unsigned int client)
+		{
+			userinfo_overrides[client].clear();
+		}
 	}
 
 	void clear_overrides()
@@ -86,20 +86,23 @@ namespace userinfo
 	class component final : public component_interface
 	{
 	public:
-		void post_unpack() override
+		void on_startup([[maybe_unused]] plugin::plugin* plugin) override
 		{
 			sv_getuserinfo_hook.create(0x573E00, sv_getuserinfo_stub);
+
+			plugin->get_interface()->callbacks()->on_player_connect(clear_client_overrides);
+			plugin->get_interface()->callbacks()->on_player_disconnect(clear_client_overrides);
 
 			gsc::method::add("setname", [](const game::scr_entref_t ent, const gsc::function_args& args) -> scripting::script_value
 			{
 				if (ent.classnum != 0)
 				{
-					throw std::runtime_error("Invalid entity");
+					throw std::runtime_error("invalid entity");
 				}
 
 				if (game::g_entities[ent.entnum].client == nullptr)
 				{
-					throw std::runtime_error("Not a player entity");
+					throw std::runtime_error("not a player entity");
 				}
 
 				const auto name = args[0].as<std::string>();
@@ -114,12 +117,12 @@ namespace userinfo
 			{
 				if (ent.classnum != 0)
 				{
-					throw std::runtime_error("Invalid entity");
+					throw std::runtime_error("invalid entity");
 				}
 
 				if (game::g_entities[ent.entnum].client == nullptr)
 				{
-					throw std::runtime_error("Not a player entity");
+					throw std::runtime_error("not a player entity");
 				}
 
 				userinfo_overrides[ent.entnum].erase("name");
@@ -132,12 +135,12 @@ namespace userinfo
 			{
 				if (ent.classnum != 0)
 				{
-					throw std::runtime_error("Invalid entity");
+					throw std::runtime_error("invalid entity");
 				}
 
 				if (game::g_entities[ent.entnum].client == nullptr)
 				{
-					throw std::runtime_error("Not a player entity");
+					throw std::runtime_error("not a player entity");
 				}
 
 				const auto name = args[0].as<std::string>();
@@ -154,12 +157,12 @@ namespace userinfo
 			{
 				if (ent.classnum != 0)
 				{
-					throw std::runtime_error("Invalid entity");
+					throw std::runtime_error("invalid entity");
 				}
 
 				if (game::g_entities[ent.entnum].client == nullptr)
 				{
-					throw std::runtime_error("Not a player entity");
+					throw std::runtime_error("not a player entity");
 				}
 
 				userinfo_overrides[ent.entnum].erase("clantag");
@@ -174,12 +177,12 @@ namespace userinfo
 			{
 				if (ent.classnum != 0)
 				{
-					throw std::runtime_error("Invalid entity");
+					throw std::runtime_error("invalid entity");
 				}
 
 				if (game::g_entities[ent.entnum].client == nullptr)
 				{
-					throw std::runtime_error("Not a player entity");
+					throw std::runtime_error("not a player entity");
 				}
 
 				userinfo_overrides[ent.entnum]["clantag"] = "";
@@ -193,4 +196,4 @@ namespace userinfo
 	};
 }
 
-//REGISTER_COMPONENT(userinfo::component)
+REGISTER_COMPONENT(userinfo::component)

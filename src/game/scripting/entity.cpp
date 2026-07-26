@@ -96,20 +96,4 @@ namespace scripting
 			game::RemoveRefToValue(game::SCRIPT_OBJECT, {static_cast<int>(this->entity_id_)});
 		}
 	}
-
-	void entity::set(const std::string& field, const script_value& value) const
-	{
-		set_entity_field(*this, field, value);
-	}
-
-	template <>
-	script_value entity::get<script_value>(const std::string& field) const
-	{
-		return get_entity_field(*this, field);
-	}
-
-	script_value entity::call(const std::string& name, const std::vector<script_value>& arguments) const
-	{
-		return call_function(name, *this, arguments);
-	}
 }

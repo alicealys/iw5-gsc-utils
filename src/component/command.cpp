@@ -8,6 +8,8 @@
 namespace command
 {
 	std::unordered_map<std::string, std::function<void(params&)>> handlers;
+	std::vector<std::string> script_commands;
+	utils::memory::allocator allocator;
 
 	void main_handler()
 	{
@@ -46,7 +48,11 @@ namespace command
 
 		for (auto i = index; i < this->size(); i++)
 		{
-			if (i > index) result.append(" ");
+			if (i > index)
+			{
+				result.append(" ");
+			}
+
 			result.append(this->get(i));
 		}
 
@@ -70,14 +76,11 @@ namespace command
 		handlers[command] = callback;
 	}
 
-	std::vector<std::string> script_commands;
-	utils::memory::allocator allocator;
-
 	void add_script_command(const std::string& name, const std::function<void(const params&)>& callback)
 	{
 		script_commands.push_back(name);
-		const auto _name = allocator.duplicate_string(name);
-		add(_name, callback);
+		const auto name_str = allocator.duplicate_string(name);
+		add(name_str, callback);
 	}
 
 	void clear_script_commands()
@@ -95,7 +98,7 @@ namespace command
 	class component final : public component_interface
 	{
 	public:
-		void post_unpack() override
+		void on_startup([[maybe_unused]] plugin::plugin* plugin) override
 		{
 		}
 	};

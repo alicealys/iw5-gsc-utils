@@ -36,14 +36,33 @@ namespace gsc
 	using script_function = std::function<scripting::script_value(const function_args&)>;
 	using script_method = std::function<scripting::script_value(const game::scr_entref_t, const function_args&)>;
 
+	void* make_function_thunk(const char* name, const script_function* func);
+	void* make_method_thunk(const char* name, const script_method* meth);
+
 	namespace function
 	{
-		void add(const std::string& name, const script_function& func);
+		template <typename F>
+		void add(const std::string& name, F&& f)
+		{
+			const auto name_str = utils::memory::duplicate_string(name);
+			const auto func = new script_function(std::forward<F>(f));
+			const auto thunk = reinterpret_cast<
+				plutonium::sdk::interfaces::gsc::function_callback>(make_function_thunk(name_str, func));
+			plugin::get()->get_interface()->gsc()->register_function(name, thunk);
+		}
 	}
 
 	namespace method
 	{
-		void add(const std::string& name, const script_method& func);
+		template <typename F>
+		void add(const std::string& name, F&& f)
+		{
+			const auto name_str = utils::memory::duplicate_string(name);
+			const auto func = new script_method(std::forward<F>(f));
+			const auto thunk = reinterpret_cast<
+				plutonium::sdk::interfaces::gsc::method_callback>(make_method_thunk(name_str, func));
+			plugin::get()->get_interface()->gsc()->register_method(name, thunk);
+		}
 	}
 
 	namespace field
