@@ -1,6 +1,5 @@
 #include <stdinc.hpp>
 #include "execution.hpp"
-#include "safe_execution.hpp"
 #include "stack_isolation.hpp"
 #include "event.hpp"
 

@@ -4,9 +4,76 @@
 #include "scheduler.hpp"
 #include "gsc.hpp"
 #include "json.hpp"
+#include "scripting.hpp"
 
 namespace io
 {
+	namespace
+	{
+		struct http_request_t
+		{
+			std::string url;
+			bool completed;
+			std::string result;
+			scripting::entity handle;
+		};
+
+		utils::concurrency::container<std::vector<http_request_t>> requests;
+
+		void run_requests()
+		{
+			requests.access([&](std::vector<http_request_t>& r)
+			{
+				for (auto& request : r)
+				{
+					const auto data = utils::http::get_data(request.url.data());
+					if (data.has_value())
+					{
+						request.result = data->substr(0, 0x5000);
+					}
+					else
+					{
+						request.result = "";
+					}
+
+					request.completed = true;
+				}
+			});
+		}
+
+		void check_requests()
+		{
+			requests.access([&](std::vector<http_request_t>& r)
+			{
+				for (auto i = r.begin(); i != r.end(); )
+				{
+					if (!i->completed)
+					{
+						++i;
+						continue;
+					}
+					else
+					{
+						scripting::notify(i->handle, "done", {i->result});
+						i = r.erase(i);
+					}
+				}
+			});
+		}
+
+		void add_request(const std::string& url, const scripting::entity& handle)
+		{
+			requests.access([&](std::vector<http_request_t>& r)
+			{
+				http_request_t request{};
+				request.handle = handle;
+				request.url = url;
+				request.completed = false;
+				r.emplace_back(request);
+			});
+		}
+	}
+
 	class component final : public component_interface
 	{
 	public:
@@ -24,6 +91,17 @@ namespace io
 
 		void on_startup([[maybe_unused]] plugin::plugin* plugin) override
 		{
+			scheduler::loop(run_requests, scheduler::async);
+			scheduler::loop(check_requests, scheduler::server);
+
+			scripting::on_shutdown([]()
+			{
+				requests.access([&](std::vector<http_request_t>& r)
+				{
+					r.clear();
+				});
+			});
+
 			gsc::function::add("jsonprint", [](const gsc::function_args& args) -> scripting::script_value
 			{
 				std::string buffer;
@@ -116,17 +194,7 @@ namespace io
 				const auto url = args[0].as<std::string>();
 				const auto object = scripting::entity(scripting::make_object());
 
-				scheduler::once([object, url]()
-				{
-					const auto result = utils::http::get_data(url.data());
-					scheduler::once([object, result]()
-					{
-						const auto value = result.has_value()
-							? result.value().substr(0, 0x5000)
-							: "";
-						scripting::notify(object, "done", {value});
-					});
-				}, scheduler::pipeline::async);
+				add_request(url, object);
 			
 				return object;
 			});
