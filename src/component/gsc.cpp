@@ -14,41 +14,8 @@
 
 namespace gsc
 {
-	std::unordered_map<unsigned, script_function> functions;
-	std::unordered_map<unsigned, script_method> methods;
-
 	namespace
 	{
-		std::string method_name(unsigned int id)
-		{
-			const auto& map = (*game::plutonium::gsc_ctx)->meth_map();
-
-			for (const auto& function : map)
-			{
-				if (function.second == id)
-				{
-					return function.first.data();
-				}
-			}
-
-			return {};
-		}
-
-		std::string function_name(unsigned int id)
-		{
-			const auto& map = (*game::plutonium::gsc_ctx)->func_map();
-
-			for (const auto& function : map)
-			{
-				if (function.second == id)
-				{
-					return function.first.data();
-				}
-			}
-
-			return {};
-		}
-
 		function_args get_arguments()
 		{
 			std::vector<scripting::script_value> args;
@@ -72,9 +39,6 @@ namespace gsc
 			scripting::push_value(value);
 		}
 
-		auto function_map_start = 0x200;
-		auto method_map_start = 0x8400;
-		auto token_map_start = 0x8000;
 		auto field_offset_start = 0xA000;
 
 		struct entity_field
@@ -87,16 +51,11 @@ namespace gsc
 		std::vector<std::function<void()>> post_load_callbacks;
 		std::unordered_map<unsigned int, std::unordered_map<unsigned int, entity_field>> custom_fields;
 
-		void call_function(unsigned int id)
+		void call_function(const script_function* function, const char* name)
 		{
-			if (id < 0x200)
-			{
-				return reinterpret_cast<builtin_function*>(game::plutonium::function_table.get())[id]();
-			}
-
 			try
 			{
-				const auto result = functions[id](get_arguments());
+				const auto result = function->operator()(get_arguments());
 				const auto type = result.get_raw().type;
 
 				if (type)
@@ -106,23 +65,18 @@ namespace gsc
 			}
 			catch (const std::exception& e)
 			{
-				printf("************** Script execution error **************\n");
-				printf("Error executing function %s:\n", function_name(id).data());
-				printf("    %s\n", e.what());
-				printf("****************************************************\n");
+				printf("************** Script execution error **************");
+				printf("Error executing function %s:", name);
+				printf("    %s", e.what());
+				printf("****************************************************");
 			}
 		}
 
-		void call_method(game::scr_entref_t ent, unsigned int id)
+		void call_method(const script_method* method, const char* name, game::scr_entref_t ent)
 		{
-			if (id < 0x8400)
-			{
-				return reinterpret_cast<builtin_method*>(game::plutonium::method_table.get())[id - 0x8000](ent);
-			}
-
 			try
 			{
-				const auto result = methods[id](ent, get_arguments());
+				const auto result = method->operator()(ent, get_arguments());
 				const auto type = result.get_raw().type;
 
 				if (type)
@@ -132,55 +86,10 @@ namespace gsc
 			}
 			catch (const std::exception& e)
 			{
-				printf("************** Script execution error **************\n");
-				printf("Error executing method %s:\n", method_name(id).data());
-				printf("    %s\n", e.what());
-				printf("****************************************************\n");
-			}
-		}
-
-		__declspec(naked) void call_builtin_stub()
-		{
-			__asm
-			{
-				push eax
-
-				mov eax, 0x20B4A5C
-				mov [eax], esi
-
-				mov eax, 0x20B4A90
-				mov [eax], edx
-
-				pop eax
-
-				pushad
-				push eax
-				call call_function
-				pop eax
-				popad
-
-				push 0x56C900
-				retn
-			}
-		}
-
-		__declspec(naked) void call_builtin_method_stub()
-		{
-			__asm
-			{
-				pushad
-				push ecx
-				push ebx
-				call call_method
-				pop ebx
-				pop ecx
-				popad
-
-				push ebx
-				add esp, 0xC
-
-				push 0x56CBE9
-				retn
+				printf("************** Script execution error **************");
+				printf("Error executing method %s:", name);
+				printf("    %s", e.what());
+				printf("****************************************************");
 			}
 		}
 
@@ -201,10 +110,10 @@ namespace gsc
 			}
 			catch (const std::exception& e)
 			{
-				printf("************** Script execution error **************\n");
-				printf("Error getting field %s:\n", field.name.data());
-				printf("    %s\n", e.what());
-				printf("****************************************************\n");
+				printf("************** Script execution error **************");
+				printf("Error getting field %s:", field.name.data());
+				printf("    %s", e.what());
+				printf("****************************************************");
 			}
 		}
 
@@ -225,10 +134,10 @@ namespace gsc
 			}
 			catch (const std::exception& e)
 			{
-				printf("************** Script execution error **************\n");
-				printf("Error setting field %s:\n", field.name.data());
-				printf("    %s\n", e.what());
-				printf("****************************************************\n");
+				printf("************** Script execution error **************");
+				printf("Error setting field %s:", field.name.data());
+				printf("    %s", e.what());
+				printf("****************************************************");
 			}
 		}
 
@@ -244,53 +153,51 @@ namespace gsc
 		}
 	}
 
-	namespace function
+	void* make_function_thunk(const char* name, const script_function* func)
 	{
-		void add(const std::string& name, const script_function& func)
+		static std::uint8_t bytes[] =
 		{
-			auto index = 0u;
-			auto& ctx = (*game::plutonium::gsc_ctx);
-			
-			if (ctx->func_exists(name))
-			{
-				printf("[iw5-gsc-utils] Warning: function '%s' already defined\n", name.data());
-				index = ctx->func_id(name);
-			}
-			else
-			{
-				index = function_map_start++;
-				ctx->func_add(name, index);
-			}
+			0x68, 0x44, 0x33, 0x22, 0x11, // push
+			0x68, 0x44, 0x33, 0x22, 0x11, // push
+			0x00, 0x00, 0x00, 0x00, 0x00, // call
+			0x83, 0xC4, 0x08,			  // add esp, 8
+			0xC3						  // ret
+		};
 
-			functions.insert(std::make_pair(index, func));
-		}
+		const auto stub = utils::memory::allocate_array<std::uint8_t>(sizeof(bytes));
+		std::memcpy(stub, bytes, sizeof(bytes));
+
+		utils::hook::unprotect(stub, sizeof(bytes));
+
+		*reinterpret_cast<std::size_t*>(stub + 1) = reinterpret_cast<size_t>(name);
+		*reinterpret_cast<std::size_t*>(stub + 6) = reinterpret_cast<size_t>(func);
+		utils::hook::call(stub + 10, call_function);
+
+		return stub;
 	}
 
-	namespace method
+	void* make_method_thunk(const char* name, const script_method* func)
 	{
-		void add(const std::string& name, const script_method& func)
+		static std::uint8_t bytes[] =
 		{
-			if (true)
-			{
-				return;
-			}
+			0xFF, 0x74, 0x24, 0x04,		  // push [esp+4]
+			0x68, 0x44, 0x33, 0x22, 0x11, // push
+			0x68, 0x44, 0x33, 0x22, 0x11, // push
+			0x00, 0x00, 0x00, 0x00, 0x00, // call
+			0x83, 0xC4, 0x0C,			  // add esp, 8
+			0xC3						  // ret
+		};
 
-			auto index = 0u;
-			auto& ctx = (*game::plutonium::gsc_ctx);
+		const auto stub = utils::memory::allocate_array<std::uint8_t>(sizeof(bytes));
+		std::memcpy(stub, bytes, sizeof(bytes));
 
-			if (ctx->meth_exists(name))
-			{
-				printf("[iw5-gsc-utils] Warning: method '%s' already defined\n", name.data());
-				index = ctx->meth_id(name);
-			}
-			else
-			{
-				index = method_map_start++;
-				ctx->meth_add(name, index);
-			}
+		utils::hook::unprotect(stub, sizeof(bytes));
 
-			methods.insert(std::make_pair(index, func));
-		}
+		*reinterpret_cast<std::size_t*>(stub + 5) = reinterpret_cast<size_t>(name);
+		*reinterpret_cast<std::size_t*>(stub + 10) = reinterpret_cast<size_t>(func);
+		utils::hook::call(stub + 14, call_method);
+
+		return stub;
 	}
 
 	namespace field
@@ -338,7 +245,7 @@ namespace gsc
 	class component final : public component_interface
 	{
 	public:
-		void post_unpack() override
+		void on_startup([[maybe_unused]] plugin::plugin* plugin) override
 		{
 			scr_get_object_field_hook.create(0x52BDB0, scr_get_object_field_stub);
 			scr_set_object_field_hook.create(0x52BCC0, scr_set_object_field_stub);
@@ -394,14 +301,6 @@ namespace gsc
 				return {};
 			});
 
-			function::add("say", [](const function_args& args) -> scripting::script_value
-			{
-				const auto message = args[0].as<std::string>();
-				game::SV_GameSendServerCommand(-1, 0, utils::string::va("%c \"%s\"", 84, message.data()));
-
-				return {};
-			});
-
 			function::add("dropallbots", [](const function_args&) -> scripting::script_value
 			{
 				for (auto i = 0; i < *game::svs_clientCount; i++)
@@ -416,45 +315,26 @@ namespace gsc
 				return {};
 			});
 
-			method::add("tell", [](const game::scr_entref_t ent, const function_args& args) -> scripting::script_value
-			{
-				if (ent.classnum != 0)
-				{
-					throw std::runtime_error("Invalid entity");
-				}
-
-				const auto client = ent.entnum;
-
-				if (game::g_entities[client].client == nullptr)
-				{
-					throw std::runtime_error("Not a player entity");
-				}
-
-				const auto message = args[0].as<std::string>();
-				game::SV_GameSendServerCommand(client, 0, utils::string::va("%c \"%s\"", 84, message.data()));
-
-				return {};
-			});
-
 			method::add("specialtymarathon", [](const game::scr_entref_t ent, const function_args& args) -> scripting::script_value
 			{
 				if (ent.classnum != 0)
 				{
-					throw std::runtime_error("Invalid entity");
+					throw std::runtime_error("invalid entity");
 				}
 
 				const auto client = ent.entnum;
 
 				if (game::g_entities[client].client == nullptr)
 				{
-					throw std::runtime_error("Not a player entity");
+					throw std::runtime_error("not a player entity");
 				}
 
 				const auto toggle = args[0].as<int>();
 				auto flags = game::g_entities[client].client->ps.perks[0];
 
 				game::g_entities[client].client->ps.perks[0] = toggle
-					? flags | 0x4000u : flags & ~0x4000u;
+					? flags | 0x4000u 
+					: flags & ~0x4000u;
 
 				return {};
 			});
@@ -463,14 +343,14 @@ namespace gsc
 			{
 				if (ent.classnum != 0)
 				{
-					throw std::runtime_error("Invalid entity");
+					throw std::runtime_error("invalid entity");
 				}
 
 				const auto client = ent.entnum;
 
 				if (game::g_entities[client].client == nullptr)
 				{
-					throw std::runtime_error("Not a player entity");
+					throw std::runtime_error("not a player entity");
 				}
 
 				return game::svs_clients[client].bIsTestClient;
@@ -480,24 +360,17 @@ namespace gsc
 			{
 				if (ent.classnum != 0)
 				{
-					throw std::runtime_error("Invalid entity");
+					throw std::runtime_error("invalid entity");
 				}
 
 				const auto client = ent.entnum;
 
 				if (game::g_entities[client].client == nullptr)
 				{
-					throw std::runtime_error("Not a player entity");
+					throw std::runtime_error("not a player entity");
 				}
 
 				return {(game::g_entities[client].client->flags & 4) != 0};
-			});
-
-			// let other plugins read the pointers
-			post_load_callbacks.push_back([]()
-			{
-				utils::hook::jump(0x56C8EB, call_builtin_stub);
-				utils::hook::jump(0x56CBDC, call_builtin_method_stub);
 			});
 		}
 	};

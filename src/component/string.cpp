@@ -10,13 +10,8 @@ namespace string
 	class component final : public component_interface
 	{
 	public:
-		void post_unpack() override
+		void on_startup([[maybe_unused]] plugin::plugin* plugin) override
 		{
-			gsc::function::add("toupper", [](const gsc::function_args& args)
-			{
-				return utils::string::to_upper(args[0].as<std::string>());
-			});
-
 			gsc::function::add("getchar", [](const gsc::function_args& args)
 			{
 				auto index = 0;
@@ -28,7 +23,7 @@ namespace string
 				const auto string = args[0].as<std::string>();
 				if (index >= static_cast<int>(string.size()))
 				{
-					throw std::runtime_error("Char index out of bounds");
+					throw std::runtime_error("char index out of bounds");
 				}
 
 				return static_cast<int>(string[index]);
@@ -43,4 +38,4 @@ namespace string
 	};
 }
 
-//REGISTER_COMPONENT(string::component)
+REGISTER_COMPONENT(string::component)

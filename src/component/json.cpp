@@ -144,7 +144,7 @@ namespace json
 	class component final : public component_interface
 	{
 	public:
-		void post_unpack() override
+		void on_startup([[maybe_unused]] plugin::plugin* plugin) override
 		{
 			gsc::function::add("array", [](const gsc::function_args& args)
 			{
@@ -194,4 +194,4 @@ namespace json
 	};
 }
 
-//REGISTER_COMPONENT(json::component)
+REGISTER_COMPONENT(json::component)
