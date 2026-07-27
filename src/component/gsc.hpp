@@ -26,13 +26,14 @@ namespace gsc
 	class function_args
 	{
 	public:
-		function_args(std::vector<scripting::script_value>);
+		function_args();
+		function_args(const std::vector<scripting::script_value>&);
 
-		unsigned int size() const;
-		std::vector<scripting::script_value> get_raw() const;
-		scripting::value_wrap get(const int index) const;
+		std::uint32_t size() const;
+		const std::vector<scripting::script_value>& get_raw() const;
+		scripting::value_wrap get(const std::uint32_t index) const;
 
-		scripting::value_wrap operator[](const int index) const
+		scripting::value_wrap operator[](const std::uint32_t index) const
 		{
 			return this->get(index);
 		}

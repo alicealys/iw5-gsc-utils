@@ -164,7 +164,7 @@ namespace scripting
 	class value_wrap
 	{
 	public:
-		value_wrap(const scripting::script_value& value, int argument_index);
+		value_wrap(const scripting::script_value& value, const std::uint32_t);
 
 		template <typename T>
 		T as() const
@@ -179,7 +179,7 @@ namespace scripting
 			}
 		}
 
-		template <typename T, typename I = int>
+		template <typename T>
 		T* as_ptr()
 		{
 			try
@@ -203,7 +203,7 @@ namespace scripting
 			return this->value_.get_raw();
 		}
 
-		int argument_index_{};
+		std::uint32_t argument_index_{};
 		scripting::script_value value_;
 	};
 }

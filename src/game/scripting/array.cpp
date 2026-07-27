@@ -15,30 +15,30 @@ namespace scripting
 		}
 
 		const auto value = game::scr_VarGlob->childVariableValue[this->id_ + 0xC800 * (this->parent_id_ & 1)];
-		game::VariableValue variable;
+		game::VariableValue variable{};
 		variable.u = value.u.u;
 		variable.type = (game::scriptType_e)value.type;
 
 		this->value_ = variable;
 	}
 
-	void array_value::operator=(const script_value& _value)
+	void array_value::operator=(const script_value& value)
 	{
 		if (!this->id_)
 		{
 			return;
 		}
 
-		const auto value = _value.get_raw();
+		const auto& value_raw = value.get_raw();
 
 		const auto variable = &game::scr_VarGlob->childVariableValue[this->id_ + 0xC800 * (this->parent_id_ & 1)];
-		game::AddRefToValue(value.type, value.u);
+		game::AddRefToValue(value_raw.type, value_raw.u);
 		game::RemoveRefToValue(variable->type, variable->u.u);
 
-		variable->type = value.type;
-		variable->u.u = value.u;
+		variable->type = value_raw.type;
+		variable->u.u = value_raw.u;
 
-		this->value_ = value;
+		this->value_ = value_raw;
 	}
 
 	array::array(const unsigned int id)
@@ -170,7 +170,7 @@ namespace scripting
 		return game::Scr_GetSelf(this->id_);
 	}
 
-	unsigned int array::push(script_value value) const
+	unsigned int array::push(const script_value& value) const
 	{
 		this->set(this->size(), value);
 		return this->size();
@@ -225,7 +225,7 @@ namespace scripting
 		}
 
 		const auto value = game::scr_VarGlob->childVariableValue[variable_id + 0xC800 * (this->id_ & 1)];
-		game::VariableValue variable;
+		game::VariableValue variable{};
 		variable.u = value.u.u;
 		variable.type = (game::scriptType_e)value.type;
 
@@ -242,7 +242,7 @@ namespace scripting
 		}
 
 		const auto value = game::scr_VarGlob->childVariableValue[variable_id + 0xC800 * (this->id_ & 1)];
-		game::VariableValue variable;
+		game::VariableValue variable{};
 		variable.u = value.u.u;
 		variable.type = (game::scriptType_e)value.type;
 
@@ -261,9 +261,9 @@ namespace scripting
 		}
 	}
 
-	void array::set(const std::string& key, const script_value& value_) const
+	void array::set(const std::string& key, const script_value& value) const
 	{
-		const auto value = value_.get_raw();
+		const auto& value_raw = value.get_raw();
 		const auto variable_id = this->get_value_id(key);
 
 		if (!variable_id)
@@ -273,16 +273,16 @@ namespace scripting
 
 		const auto variable = &game::scr_VarGlob->childVariableValue[variable_id + 0xC800 * (this->id_ & 1)];
 
-		game::AddRefToValue(value.type, value.u);
+		game::AddRefToValue(value_raw.type, value_raw.u);
 		game::RemoveRefToValue(variable->type, variable->u.u);
 
-		variable->type = value.type;
-		variable->u.u = value.u;
+		variable->type = value_raw.type;
+		variable->u.u = value_raw.u;
 	}
 
-	void array::set(const unsigned int index, const script_value& value_) const
+	void array::set(const unsigned int index, const script_value& value) const
 	{
-		const auto value = value_.get_raw();
+		const auto& value_raw = value.get_raw();
 		const auto variable_id = this->get_value_id(index);
 
 		if (!variable_id)
@@ -292,11 +292,11 @@ namespace scripting
 
 		const auto variable = &game::scr_VarGlob->childVariableValue[variable_id + 0xC800 * (this->id_ & 1)];
 
-		game::AddRefToValue(value.type, value.u);
+		game::AddRefToValue(value_raw.type, value_raw.u);
 		game::RemoveRefToValue(variable->type, variable->u.u);
 
-		variable->type = value.type;
-		variable->u.u = value.u;
+		variable->type = value_raw.type;
+		variable->u.u = value_raw.u;
 	}
 
 	unsigned int array::get_entity_id() const
@@ -320,6 +320,7 @@ namespace scripting
 	unsigned int array::get_value_id(const unsigned int index) const
 	{
 		const auto variable_id = game::FindVariable(this->id_, (index - 0x800000) & 0xFFFFFF);
+
 		if (!variable_id)
 		{
 			return game::GetNewArrayVariable(this->id_, index);

@@ -6,7 +6,6 @@
 
 #include "game/scripting/event.hpp"
 #include "game/scripting/execution.hpp"
-#include "game/scripting/functions.hpp"
 #include "game/scripting/array.hpp"
 #include "game/scripting/function.hpp"
 
@@ -16,19 +15,6 @@ namespace gsc
 {
 	namespace
 	{
-		function_args get_arguments()
-		{
-			std::vector<scripting::script_value> args;
-
-			for (auto i = 0; i < game::scr_VmPub->outparamcount; i++)
-			{
-				const auto value = game::scr_VmPub->top[-i];
-				args.push_back(value);
-			}
-
-			return args;
-		}
-
 		void return_value(const scripting::script_value& value)
 		{
 			if (game::scr_VmPub->outparamcount)
@@ -108,8 +94,8 @@ namespace gsc
 				return scr_set_object_field_hook.invoke<void>(classnum, entnum, offset);
 			}
 
-			const auto args = get_arguments();
-			
+			function_args args;
+
 			try
 			{
 				field->setter(entnum, args[0]);
@@ -141,7 +127,8 @@ namespace gsc
 	{
 		try
 		{
-			const auto result = function.operator()(get_arguments());
+			function_args args;
+			const auto result = function.operator()(args);
 			const auto type = result.get_raw().type;
 
 			if (type)
@@ -159,7 +146,8 @@ namespace gsc
 	{
 		try
 		{
-			const auto result = method.operator()(ent, get_arguments());
+			function_args args;
+			const auto result = method.operator()(ent, args);
 			const auto type = result.get_raw().type;
 
 			if (type)
@@ -188,22 +176,31 @@ namespace gsc
 		}
 	}
 
-	function_args::function_args(std::vector<scripting::script_value> values)
+	function_args::function_args()
+	{
+		for (auto i = 0u; i < game::scr_VmPub->outparamcount; i++)
+		{
+			const auto value = game::scr_VmPub->top[-i];
+			this->values_.emplace_back(value);
+		}
+	}
+
+	function_args::function_args(const std::vector<scripting::script_value>& values)
 		: values_(values)
 	{
 	}
 
-	unsigned int function_args::size() const
+	std::uint32_t function_args::size() const
 	{
 		return this->values_.size();
 	}
 
-	std::vector<scripting::script_value> function_args::get_raw() const
+	const std::vector<scripting::script_value>& function_args::get_raw() const
 	{
 		return this->values_;
 	}
 
-	scripting::value_wrap function_args::get(const int index) const
+	scripting::value_wrap function_args::get(const std::uint32_t index) const
 	{
 		if (index >= this->values_.size())
 		{

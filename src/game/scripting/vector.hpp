@@ -26,6 +26,6 @@ namespace scripting
 		void set_z(float value);
 
 	private:
-		game::vec3_t value_{ 0 };
+		game::vec3_t value_{};
 	};
 }

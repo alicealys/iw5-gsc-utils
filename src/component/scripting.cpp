@@ -7,7 +7,6 @@
 
 #include "game/scripting/event.hpp"
 #include "game/scripting/execution.hpp"
-#include "game/scripting/functions.hpp"
 
 #include "gsc.hpp"
 

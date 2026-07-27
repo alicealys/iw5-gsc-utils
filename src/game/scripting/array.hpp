@@ -34,7 +34,7 @@ namespace scripting
 		std::vector<script_value> get_keys() const;
 		unsigned int size() const;
 
-		unsigned int push(script_value) const;
+		unsigned int push(const script_value&) const;
 		void erase(const unsigned int) const;
 		void erase(const std::string&) const;
 		script_value pop() const;
@@ -69,12 +69,12 @@ namespace scripting
 		{
 			if (key.is<I>())
 			{
-				return { this->id_, this->get_value_id(key.as<I>()) };
+				return {this->id_, this->get_value_id(key.as<I>())};
 			}
 
 			if (key.is<S>())
 			{
-				return { this->id_, this->get_value_id(key.as<S>()) };
+				return {this->id_, this->get_value_id(key.as<S>())};
 			}
 		}
 

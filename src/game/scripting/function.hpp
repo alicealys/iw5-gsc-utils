@@ -12,14 +12,14 @@ namespace scripting
 		script_value get_raw() const;
 		const char* get_pos() const;
 
-		script_value call(const entity& self, std::vector<script_value> arguments) const;
+		script_value call(const entity& self, const std::vector<script_value>& arguments) const;
 
-		script_value operator()(const entity& self, std::vector<script_value> arguments) const
+		script_value operator()(const entity& self, const std::vector<script_value>& arguments) const
 		{
 			return this->call(self, arguments);
 		}
 
-		script_value operator()(std::vector<script_value> arguments) const
+		script_value operator()(const std::vector<script_value>& arguments) const
 		{
 			return this->call(*game::levelEntityId, arguments);
 		}
@@ -28,7 +28,9 @@ namespace scripting
 		{
 			return this->call(*game::levelEntityId, {});
 		}
+
 	private:
 		const char* pos_;
+
 	};
 }

@@ -102,7 +102,8 @@ namespace io
 				});
 			});
 
-			gsc::function::add("jsonprint", [](const gsc::function_args& args) -> scripting::script_value
+			gsc::function::add("jsonprint", [](const gsc::function_args& args) 
+				-> scripting::script_value
 			{
 				std::string buffer;
 
@@ -189,7 +190,8 @@ namespace io
 				return scripting::script_value{};
 			});
 
-			gsc::function::add("httpget", [](const gsc::function_args& args) -> scripting::script_value
+			gsc::function::add("httpget", [](const gsc::function_args& args) 
+				-> scripting::script_value
 			{
 				const auto url = args[0].as<std::string>();
 				const auto object = scripting::entity(scripting::make_object());
