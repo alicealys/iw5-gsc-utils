@@ -321,7 +321,7 @@ namespace scripting
 		return this->value_.get();
 	}
 
-	value_wrap::value_wrap(const scripting::script_value& value, int argument_index)
+	value_wrap::value_wrap(const scripting::script_value& value, const std::uint32_t argument_index)
 		: value_(value)
 		, argument_index_(argument_index)
 	{
