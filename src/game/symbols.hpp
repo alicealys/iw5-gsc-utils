@@ -48,6 +48,7 @@ namespace game
 	WEAK symbol<void()> Scr_MakeArray{0x56ADE0};
 	WEAK symbol<void(unsigned int stringValue)> Scr_AddArrayStringIndexed{0x56AE70};
 	WEAK symbol<void(unsigned int classnum, unsigned int name, unsigned int canonicalString, unsigned int offset)> Scr_AddClassField{0x567CD0};
+	WEAK symbol<void()> Scr_ErrorInternal{0x568FD0};
 
 	WEAK symbol<unsigned int(const char* str, unsigned int user)> SL_GetString{0x5649E0};
 	WEAK symbol<unsigned int(const char* str)> SL_GetCanonicalString{0x5619A0};
