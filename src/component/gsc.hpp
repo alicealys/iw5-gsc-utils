@@ -4,13 +4,23 @@
 
 namespace gsc
 {
-	enum classid
+	enum class_id_t
 	{
-		entity,
-		hudelem,
-		pathnode,
-		node,
-		count
+		class_entity,
+		class_hudelem,
+		class_pathnode,
+		class_node,
+		class_count
+	};
+
+	using field_getter_t = std::function<scripting::script_value(unsigned int entnum)>;
+	using field_setter_t = std::function<void(unsigned int entnum, const scripting::script_value&)>;
+
+	struct entity_field_t
+	{
+		std::string name;
+		field_getter_t getter;
+		field_setter_t setter;
 	};
 
 	class function_args
@@ -36,39 +46,55 @@ namespace gsc
 	using script_function = std::function<scripting::script_value(const function_args&)>;
 	using script_method = std::function<scripting::script_value(const game::scr_entref_t, const function_args&)>;
 
-	void* make_function_thunk(const char* name, const script_function* func);
-	void* make_method_thunk(const char* name, const script_method* meth);
+	void call_function(const script_function& function, const std::string& name);
+	void call_method(const script_method& method, const std::string& name, game::scr_entref_t ent);
 
 	namespace function
 	{
 		template <typename F>
-		void add(const std::string& name, F&& f)
+		void add(const std::string& n, F&& f)
 		{
-			const auto name_str = utils::memory::duplicate_string(name);
-			const auto func = new script_function(std::forward<F>(f));
-			const auto thunk = reinterpret_cast<
-				plutonium::sdk::interfaces::gsc::function_callback>(make_function_thunk(name_str, func));
-			plugin::get()->get_interface()->gsc()->register_function(name, thunk);
+			static auto done = false;
+			assert(!done);
+			done = true;
+
+			static struct
+			{
+				std::string name;
+				script_function function;
+			} ctx{n, f};
+
+			plugin::get()->get_interface()->gsc()->register_function(n, []()
+			{
+				call_function(ctx.function, ctx.name);
+			});
 		}
 	}
 
 	namespace method
 	{
 		template <typename F>
-		void add(const std::string& name, F&& f)
+		void add(const std::string& n, F&& f)
 		{
-			const auto name_str = utils::memory::duplicate_string(name);
-			const auto func = new script_method(std::forward<F>(f));
-			const auto thunk = reinterpret_cast<
-				plutonium::sdk::interfaces::gsc::method_callback>(make_method_thunk(name_str, func));
-			plugin::get()->get_interface()->gsc()->register_method(name, thunk);
+			static auto done = false;
+			assert(!done);
+			done = true;
+
+			static struct
+			{
+				std::string name;
+				script_method function;
+			} ctx{n, f};
+
+			plugin::get()->get_interface()->gsc()->register_method(n, [](plutonium::sdk::types::entref entref)
+			{
+				call_method(ctx.function, ctx.name, *reinterpret_cast<game::scr_entref_t*>(&entref));
+			});
 		}
 	}
 
 	namespace field
 	{
-		void add(const classid classnum, const std::string& name,
-			const std::function<scripting::script_value(unsigned int entnum)>& getter,
-			const std::function<void(unsigned int entnum, const scripting::script_value&)>& setter);
+		void add(const class_id_t classnum, const std::string& name, const field_getter_t getter, const field_setter_t& setter);
 	}
 }
