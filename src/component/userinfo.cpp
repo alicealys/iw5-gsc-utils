@@ -72,6 +72,19 @@ namespace userinfo
 		{
 			userinfo_overrides[client].clear();
 		}
+
+		void* client_connect_stub(int client_num, int script_pers_id)
+		{
+			const auto res = utils::hook::invoke<void*>(0x4FAFB0, client_num, script_pers_id);
+
+			if (res == nullptr)
+			{
+				const scripting::entity player = game::Scr_GetEntityId(client_num, 0);
+				scripting::notify(*game::levelEntityId, "direct_connect", {player});
+			}
+
+			return res;
+		}
 	}
 
 	void clear_overrides()
@@ -88,6 +101,7 @@ namespace userinfo
 		void on_startup([[maybe_unused]] plugin::plugin* plugin) override
 		{
 			sv_getuserinfo_hook.create(0x573E00, sv_getuserinfo_stub);
+			utils::hook::call(0x573042, client_connect_stub);
 
 			plugin->get_interface()->callbacks()->on_player_connect(clear_client_overrides);
 			plugin->get_interface()->callbacks()->on_player_disconnect(clear_client_overrides);
