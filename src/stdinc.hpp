@@ -12,6 +12,9 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#undef min
+#undef max
+
 #include <vector>
 #include <cassert>
 #include <mutex>
@@ -31,6 +34,11 @@
 #include <Psapi.h>
 
 #pragma comment(lib, "urlmon.lib")
+#pragma comment(lib, "libmysql.lib")
+#pragma comment(lib, "delayimp.lib")
+#pragma comment(lib, "secur32.lib")
+
+#include "resource.hpp"
 
 using namespace std::literals;
 

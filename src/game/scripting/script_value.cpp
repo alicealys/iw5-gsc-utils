@@ -2,6 +2,7 @@
 #include "script_value.hpp"
 #include "entity.hpp"
 #include "array.hpp"
+#include "object.hpp"
 #include "function.hpp"
 
 namespace scripting
@@ -117,6 +118,15 @@ namespace scripting
 		this->value_ = variable;
 	}
 
+	script_value::script_value(const object& value)
+	{
+		game::VariableValue variable{};
+		variable.type = game::SCRIPT_OBJECT;
+		variable.u.pointerValue = value.get_entity_id();
+
+		this->value_ = variable;
+	}
+
 	script_value::script_value(const function& value)
 	{
 		game::VariableValue variable{};
@@ -143,6 +153,12 @@ namespace scripting
 	}
 
 	template <>
+	bool script_value::is<unsigned short>() const
+	{
+		return this->is<int>();
+	}
+
+	template <>
 	bool script_value::is<bool>() const
 	{
 		return this->is<int>();
@@ -158,6 +174,12 @@ namespace scripting
 	unsigned int script_value::get() const
 	{
 		return this->get_raw().u.uintValue;
+	}
+
+	template <>
+	unsigned short script_value::get() const
+	{
+		return static_cast<unsigned short>(this->get_raw().u.uintValue);
 	}
 
 	template <>
@@ -262,6 +284,32 @@ namespace scripting
 		return array(this->get_raw().u.uintValue);
 	}
 
+	
+	/***************************************************************
+	 * Array
+	 **************************************************************/
+
+	template <>
+	bool script_value::is<object>() const
+	{
+		if (this->get_raw().type != game::SCRIPT_OBJECT)
+		{
+			return false;
+		}
+
+		const auto id = this->get_raw().u.uintValue;
+		const auto type = game::scr_VarGlob->objectVariableValue[id].w.type;
+
+		return type == game::SCRIPT_STRUCT;
+	}
+
+	template <>
+	object script_value::get() const
+	{
+		return object(this->get_raw().u.uintValue);
+	}
+
+
 	/***************************************************************
 	 * Struct
 	 **************************************************************/
@@ -320,6 +368,44 @@ namespace scripting
 	{
 		return this->value_.get();
 	}
+
+	std::string script_value::to_string() const
+	{
+		if (this->is<int>())
+		{
+			return utils::string::va("%i", this->as<int>());
+		}
+
+		if (this->is<float>())
+		{
+			return utils::string::va("%f", this->as<float>());
+		}
+
+		if (this->is<std::string>())
+		{
+			return this->as<std::string>();
+		}
+
+		if (this->is<vector>())
+		{
+			const auto vec = this->as<vector>();
+			return utils::string::va("(%g, %g, %g)",
+				vec.get_x(),
+				vec.get_y(),
+				vec.get_z()
+			);
+		}
+
+		if (this->is<function>())
+		{
+			const auto func = this->as<function>();
+			const auto pos = func.get_pos();
+			return utils::string::va("[[ function: %p ]]", pos);
+		}
+
+		return this->type_name();
+	}
+
 
 	value_wrap::value_wrap(const scripting::script_value& value, const std::uint32_t argument_index)
 		: value_(value)
