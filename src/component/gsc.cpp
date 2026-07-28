@@ -200,6 +200,11 @@ namespace gsc
 		return this->values_;
 	}
 
+	std::vector<scripting::script_value>& function_args::get_raw()
+	{
+		return this->values_;
+	}
+
 	scripting::value_wrap function_args::get(const std::uint32_t index) const
 	{
 		if (index >= this->values_.size())

@@ -2,6 +2,7 @@
 #include "game/game.hpp"
 #include "entity.hpp"
 #include "array.hpp"
+#include "object.hpp"
 #include "function.hpp"
 #include "script_value.hpp"
 

@@ -31,6 +31,7 @@ namespace gsc
 
 		std::uint32_t size() const;
 		const std::vector<scripting::script_value>& get_raw() const;
+		std::vector<scripting::script_value>& get_raw();
 		scripting::value_wrap get(const std::uint32_t index) const;
 
 		scripting::value_wrap operator[](const std::uint32_t index) const

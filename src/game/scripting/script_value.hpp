@@ -7,6 +7,7 @@ namespace scripting
 {
 	class entity;
 	class array;
+	class object;
 	class function;
 	class value_wrap;
 
@@ -82,6 +83,11 @@ namespace scripting
 				return "array";
 			}
 
+			if (info == typeid(object))
+			{
+				return "object";
+			}
+
 			if (info == typeid(function))
 			{
 				return "function";
@@ -121,6 +127,8 @@ namespace scripting
 
 		script_value(const array& value);
 
+		script_value(const object& value);
+
 		script_value(const function& value);
 
 		template <typename T>
@@ -153,7 +161,14 @@ namespace scripting
 			return reinterpret_cast<T*>(value);
 		}
 
+		std::string type_name() const
+		{
+			return get_typename(this->get_raw());
+		}
+
 		const game::VariableValue& get_raw() const;
+
+		std::string to_string() const;
 
 		variable_value value_{};
 	private:

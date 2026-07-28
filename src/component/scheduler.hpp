@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utils/thread_pool.hpp>
+
 namespace scheduler
 {
 	enum pipeline
@@ -18,4 +20,6 @@ namespace scheduler
 		std::chrono::milliseconds delay = 0ms);
 	void once(const std::function<void()>& callback, pipeline type = pipeline::server,
 		std::chrono::milliseconds delay = 0ms);
+
+	extern utils::thread_pool thread_pool;
 }

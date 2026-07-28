@@ -17,3 +17,18 @@
 [submodule "deps/plutonium-sdk"]
 	path = deps/plutonium-sdk
 	url = https://github.com/plutoniummod/plutonium-sdk.git
+[submodule "deps/libtommath"]
+	path = deps/libtommath
+	url = https://github.com/libtom/libtommath.git
+[submodule "deps/libtomcrypt"]
+	path = deps/libtomcrypt
+	url = https://github.com/libtom/libtomcrypt.git
+[submodule "deps/sqlpp11"]
+	path = deps/sqlpp11
+	url = https://github.com/rbock/sqlpp11.git
+[submodule "deps/date"]
+	path = deps/date
+	url = https://github.com/HowardHinnant/date
+[submodule "deps/curl"]
+	path = deps/curl
+	url = https://github.com/curl/curl.git
