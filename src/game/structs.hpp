@@ -426,4 +426,18 @@ namespace game
 	};
 
 	static_assert(sizeof(client_s) == 0x78698);
+
+	struct game_hudelem_s
+	{
+		unsigned int type;
+		char __pad0[128];
+		unsigned int text;
+		char __pad1[28];
+		unsigned int flags;
+		char __pad2[12];
+	};
+
+	static_assert(offsetof(game_hudelem_s, text) == 132);
+	static_assert(offsetof(game_hudelem_s, flags) == 164);
+	static_assert(sizeof(game_hudelem_s) == 180);
 }
