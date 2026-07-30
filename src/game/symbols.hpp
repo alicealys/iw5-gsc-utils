@@ -57,6 +57,7 @@ namespace game
 	WEAK symbol<void(int clientNum, int type, const char* command)> SV_GameSendServerCommand{0x573220};
 	WEAK symbol<void(int arg, char* buffer, int bufferLength)> SV_Cmd_ArgvBuffer{0x5459F0};
 	WEAK symbol<void(client_s* drop, const char* reason, bool tellThem)> SV_DropClient{0x570980};
+	WEAK symbol<void(unsigned int, const char*)> SV_SetConfigString{0x574BD0};
 
 	WEAK symbol<void(unsigned int notifyListOwnerId, unsigned int stringValue, VariableValue* top)> VM_Notify{0x569720};
 	WEAK symbol<unsigned int(unsigned int localId, const char* pos, unsigned int paramcount)> VM_Execute{0x56DFE0};
@@ -76,10 +77,12 @@ namespace game
 
 	WEAK symbol<scr_classStruct_t*> g_classMap{0x8B4300};
 
+	WEAK symbol<game_hudelem_s> g_hudelems{0x1A39E00};
 	WEAK symbol<gentity_s> g_entities{0x1A66E28};
 	WEAK symbol<unsigned int> levelEntityId{0x208E1A4};
 
 	WEAK symbol<dvar_t> sv_maxclients{0x1BA0E4C};
 	WEAK symbol<int> svs_clientCount{0x4B5CF8C};
 	WEAK symbol<client_s> svs_clients{0x4B5CF90};
+	WEAK symbol<unsigned short> sv_configstrings{0x20FA3AE};
 }
